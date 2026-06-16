@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<meta name="theme-color" content="#0D1117"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<title>SportProf</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Inter:wght@400;500&family=Space+Mono:wght@700&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#0D1117;--surface:#161B22;--surface2:#21262D;
+  --border:#30363D;--border-soft:#21262D;
+  --green:#3DDC84;--green-dim:#1A3D28;
+  --text:#E6EDF3;--text-2:#8B949E;--text-3:#484F58;
+  --red:#F85149;--red-dim:rgba(248,81,73,.08);
+  --amber:#D29922;--blue:#388BFD;
+  --r:10px;--rl:16px;
+  --fd:'Space Grotesk',sans-serif;
+  --fb:'Inter',sans-serif;
+  --fm:'Space Mono',monospace;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--fb);-webkit-font-smoothing:antialiased}
+#app{min-height:100dvh}
+button{cursor:pointer;font-family:var(--fb);border:none;background:none;color:inherit}
+input,select{font-family:var(--fb);color:var(--text);background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:13px 14px;width:100%;font-size:15px;outline:none;-webkit-appearance:none;transition:border-color .15s}
+input:focus,select:focus{border-color:var(--green)}
+input::placeholder{color:var(--text-3)}
+select option{background:var(--surface2)}
+
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.anim{animation:fadeUp .3s ease both}
+
+.screen{display:none;flex-direction:column;min-height:100dvh}
+.screen.active{display:flex}
+
+.top-bar{padding:52px 22px 22px;background:var(--surface);border-bottom:1px solid var(--border-soft);position:relative;overflow:hidden;flex-shrink:0}
+.body{flex:1;padding:24px 22px 48px;display:flex;flex-direction:column}
+
+.btn{width:100%;padding:15px;border-radius:12px;font-family:var(--fd);font-size:15px;font-weight:700;letter-spacing:.02em;transition:all .2s;border:none;cursor:pointer}
+.btn-green{background:var(--green);color:#0D1117}
+.btn-green:disabled{background:var(--surface2);color:var(--text-3);cursor:not-allowed}
+.btn-outline{background:none;border:1.5px solid var(--border);color:var(--text-2);border-radius:12px;padding:13px}
+
+.lbl{display:block;font-size:12px;font-weight:500;color:var(--text-2);margin-bottom:7px;letter-spacing:.03em}
+.fg{margin-bottom:16px}
+
+.tabs{display:flex;background:var(--surface);border-radius:var(--r);padding:3px;border:1px solid var(--border-soft);margin-bottom:26px}
+.tab{flex:1;padding:9px 8px;border-radius:8px;font-size:13px;font-weight:500;transition:all .2s;background:transparent;color:var(--text-3);font-family:var(--fd);border:1px solid transparent}
+.tab.on{background:var(--surface2);color:var(--text);border-color:var(--border)}
+
+.err{background:var(--red-dim);border:1px solid rgba(248,81,73,.3);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--red);margin-bottom:12px;display:none}
+.err.show{display:block}
+.ok-box{background:rgba(61,220,132,.08);border:1px solid rgba(61,220,132,.25);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--green);margin-bottom:12px;display:none}
+.ok-box.show{display:block}
+
+.sp{flex:1}
+.spinner{width:26px;height:26px;border:2px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto}
+
+/* Logo */
+.logo{display:flex;align-items:center;gap:10px;margin-bottom:26px}
+.logo-ico{width:36px;height:36px;border-radius:10px;background:var(--green);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.logo-nm{font-family:var(--fd);font-size:17px;font-weight:700;letter-spacing:-.5px}
+
+/* Código */
+.code-row{display:flex;gap:5px;align-items:center;justify-content:center}
+.cc{width:37px;height:52px;text-align:center;font-family:var(--fm);font-size:19px;font-weight:700;background:var(--surface);border:1.5px solid var(--border-soft);border-radius:9px;transition:all .15s;caret-color:transparent;color:var(--green);-webkit-appearance:none}
+.cc:focus{border-color:var(--green);background:rgba(61,220,132,.07);outline:none}
+.cc.filled{border-color:rgba(61,220,132,.4)}
+.cc.bad{border-color:var(--red);background:var(--red-dim);color:var(--red)}
+.cc-sep{color:var(--text-3);font-family:var(--fm);font-size:20px;flex-shrink:0;padding-bottom:2px}
+
+/* Steps */
+.steps{display:flex;gap:6px;margin-top:18px}
+.step{flex:1;height:3px;border-radius:2px;background:var(--border);transition:background .3s}
+.step.on{background:var(--green)}
+
+/* Nav */
+.nav{display:flex;background:var(--surface);border-top:1px solid var(--border-soft);padding:6px 0 calc(6px + env(safe-area-inset-bottom,0px));position:sticky;bottom:0;z-index:10}
+.ni{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:5px 0;cursor:pointer}
+.ni-ico{font-size:21px;color:var(--text-3);transition:color .15s}
+.ni-lbl{font-size:10px;font-weight:500;color:var(--text-3);letter-spacing:.02em;transition:color .15s}
+.ni.on .ni-ico,.ni.on .ni-lbl{color:var(--green)}
+
+/* Cards */
+.card{background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--rl);padding:16px}
+.avatar{width:40px;height:40px;border-radius:50%;background:var(--green-dim);display:flex;align-items:center;justify-content:center;font-family:var(--fd);font-size:14px;font-weight:700;color:var(--green);flex-shrink:0}
+.badge{display:inline-flex;align-items:center;font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;letter-spacing:.03em}
+.bg-green{background:rgba(61,220,132,.12);color:var(--green)}
+.bg-amber{background:rgba(210,153,34,.12);color:var(--amber)}
+.bg-blue{background:rgba(56,139,253,.12);color:var(--blue)}
+.hr{border:none;border-top:1px solid var(--border-soft);margin:14px 0}
+
+/* Métricas */
+.mgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:20px}
+.met{background:var(--surface2);border-radius:var(--r);padding:12px 8px;text-align:center}
+.met-n{font-family:var(--fd);font-size:22px;font-weight:700}
+.met-l{font-size:11px;color:var(--text-3);margin-top:2px}
+
+/* Deco campo */
+.deco{position:absolute;right:-16px;top:-16px;width:150px;height:150px;opacity:.05;pointer-events:none}
+
+/* Lista */
+.li{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border-soft)}
+.li:last-child{border-bottom:none}
+.li-info{flex:1;min-width:0}
+.li-name{font-size:14px;font-weight:500;margin-bottom:2px}
+.li-sub{font-size:12px;color:var(--text-3)}
+
+/* FAB */
+.fab{position:fixed;bottom:calc(68px + env(safe-area-inset-bottom,0px));right:18px;width:52px;height:52px;border-radius:50%;background:var(--green);color:#0D1117;font-size:26px;display:flex;align-items:center;justify-content:center;z-index:20;border:none;cursor:pointer;font-weight:300;line-height:1}
+
+/* Modal */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:50;align-items:flex-end;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:var(--surface);border-radius:20px 20px 0 0;padding:20px 20px calc(20px + env(safe-area-inset-bottom,0px));width:100%;max-width:480px;animation:fadeUp .22s ease}
+.modal-handle{width:34px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 18px}
+
+/* Pass strength */
+.sbar{display:flex;gap:4px;margin-top:8px}
+.sb{flex:1;height:3px;border-radius:2px;background:var(--border);transition:background .3s}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- LOADING -->
+<div id="s-loading" class="screen active" style="align-items:center;justify-content:center">
+  <div class="spinner"></div>
+</div>
+
+<!-- LOGIN -->
+<div id="s-login" class="screen">
+  <div class="top-bar">
+    <svg class="deco" viewBox="0 0 150 150"><circle cx="75" cy="75" r="55" fill="none" stroke="white" stroke-width="2"/><circle cx="75" cy="75" r="4" fill="white"/><line x1="20" y1="75" x2="130" y2="75" stroke="white" stroke-width="2"/><rect x="30" y="20" width="90" height="55" fill="none" stroke="white" stroke-width="2"/></svg>
+    <div class="logo">
+      <div class="logo-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0D1117" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+      <span class="logo-nm">SportProf</span>
+    </div>
+    <h1 style="font-family:var(--fd);font-size:26px;font-weight:700;line-height:1.15;letter-spacing:-.8px">A tua aula,<br><span style="color:var(--green)">organizada.</span></h1>
+    <p style="font-size:13px;color:var(--text-2);margin-top:8px">Gestão de turmas, avaliações e assiduidade</p>
+  </div>
+  <div class="body anim">
+    <div class="tabs">
+      <button class="tab on" id="t-code" onclick="modo('code')"># Código</button>
+      <button class="tab" id="t-email" onclick="modo('email')">@ Email</button>
+    </div>
+
+    <!-- CÓDIGO -->
+    <div id="m-code">
+      <h2 style="font-family:var(--fd);font-size:20px;font-weight:700;letter-spacing:-.4px;margin-bottom:6px">Código de acesso</h2>
+      <p style="font-size:13px;color:var(--text-2);margin-bottom:28px;line-height:1.6">Introduz o código de 8 caracteres que recebeste do administrador.</p>
+      <div id="code-row">
+        <input id="codigo-input"
+          type="text" maxlength="9"
+          inputmode="text"
+          autocomplete="off" autocorrect="off"
+          autocapitalize="characters" spellcheck="false"
+          placeholder="XXXX-XXXX"
+          oninput="formatarCodigo(this)"
+          style="
+            text-align:center;
+            font-family:var(--fm);
+            font-size:28px;
+            font-weight:700;
+            letter-spacing:.15em;
+            background:var(--surface);
+            border:1.5px solid var(--border);
+            border-radius:12px;
+            padding:16px 14px;
+            color:var(--green);
+            width:100%;
+          "
+        />
+      </div>
+      <div id="err-code" class="err" style="margin-top:12px;text-align:center"></div>
+      <div class="sp" style="min-height:28px"></div>
+      <button class="btn btn-green" id="btn-code" onclick="submitCodigo()" disabled>Continuar →</button>
+      <p style="text-align:center;font-size:13px;color:var(--text-3);margin-top:16px">Já tens conta? <button onclick="modo('email')" style="color:var(--green);font-size:13px">Entra com email</button></p>
+    </div>
+
+    <!-- EMAIL -->
+    <div id="m-email" style="display:none">
+      <h2 style="font-family:var(--fd);font-size:20px;font-weight:700;letter-spacing:-.4px;margin-bottom:6px">Entrar</h2>
+      <p style="font-size:13px;color:var(--text-2);margin-bottom:24px">Usa o teu email e palavra-passe.</p>
+      <div class="fg">
+        <label class="lbl">Email</label>
+        <input type="email" id="e-email" placeholder="nome@escola.pt" inputmode="email" autocomplete="email" oninput="chkEmail()"/>
+      </div>
+      <div class="fg">
+        <label class="lbl">Palavra-passe</label>
+        <div style="position:relative">
+          <input type="password" id="e-pass" placeholder="••••••••" autocomplete="current-password" style="padding-right:48px" oninput="chkEmail()"/>
+          <button onclick="toggleVer('e-pass','eye1')" style="position:absolute;right:13px;top:50%;transform:translateY(-50%);font-size:18px;color:var(--text-3);padding:4px" id="eye1">👁️</button>
+        </div>
+      </div>
+      <div id="err-email" class="err"></div>
+      <div class="sp" style="min-height:8px"></div>
+      <button class="btn btn-green" id="btn-email" onclick="submitEmail()" disabled>Entrar →</button>
+      <p style="text-align:center;font-size:13px;color:var(--text-3);margin-top:16px">Primeiro acesso? <button onclick="modo('code')" style="color:var(--green);font-size:13px">Usa o código</button></p>
+    </div>
+  </div>
+</div>
+
+<!-- ATIVAR CONTA -->
+<div id="s-ativar" class="screen">
+  <div class="top-bar">
+    <button onclick="ir('s-login')" style="font-size:13px;color:var(--text-2);margin-bottom:22px;display:flex;align-items:center;gap:5px">← Voltar</button>
+    <div id="badge-codigo" style="display:inline-flex;align-items:center;gap:8px;background:rgba(61,220,132,.1);border:1px solid rgba(61,220,132,.25);border-radius:8px;padding:5px 12px;margin-bottom:16px">
+      <span style="color:var(--green);font-size:12px">✓</span>
+      <span id="show-codigo" style="font-family:var(--fm);font-size:13px;font-weight:700;color:var(--green);letter-spacing:.1em"></span>
+    </div>
+    <h1 id="at-title" style="font-family:var(--fd);font-size:22px;font-weight:700;letter-spacing:-.5px;margin-bottom:5px"></h1>
+    <p id="at-sub" style="font-size:13px;color:var(--text-2);line-height:1.5"></p>
+    <div class="steps"><div class="step on" id="st1"></div><div class="step" id="st2"></div></div>
+  </div>
+  <div class="body">
+    <!-- Formulário único -->
+    <div id="at-form" class="anim">
+      <div class="fg">
+        <label class="lbl">Email</label>
+        <input type="email" id="at-email" placeholder="nome@escola.pt" inputmode="email" autocomplete="email" oninput="chkAtivar()"/>
+        <p style="font-size:12px;color:var(--text-3);margin-top:7px">Vais usar este email para entrar no futuro.</p>
+      </div>
+      <div class="fg">
+        <label class="lbl">Nova palavra-passe</label>
+        <div style="position:relative">
+          <input type="password" id="at-pass" placeholder="Mínimo 6 caracteres" autocomplete="new-password" style="padding-right:48px" oninput="chkAtivar()"/>
+          <button type="button" onclick="toggleVer('at-pass','eye2')" style="position:absolute;right:13px;top:50%;transform:translateY(-50%);font-size:18px;color:var(--text-3);padding:4px" id="eye2">👁️</button>
+        </div>
+      </div>
+      <div class="fg">
+        <label class="lbl">Confirmar palavra-passe</label>
+        <input type="password" id="at-pass2" placeholder="Repete a palavra-passe" autocomplete="new-password" oninput="chkAtivar()"/>
+        <p id="pmatch" style="font-size:12px;margin-top:6px;display:none"></p>
+      </div>
+      <div id="err-at" class="err"></div>
+      <div class="sp"></div>
+      <button class="btn btn-green" id="btn-at" onclick="submitAtivar()" disabled>Ativar conta →</button>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="s-dash" class="screen">
+  <div style="flex:1;overflow-y:auto">
+
+    <!-- INÍCIO -->
+    <div id="tc-inicio" class="tc">
+      <div class="top-bar">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <p style="font-size:12px;color:var(--text-3);margin-bottom:2px">Bem-vindo de volta</p>
+            <p style="font-family:var(--fd);font-size:20px;font-weight:700;letter-spacing:-.4px" id="d-nome">Professor</p>
+          </div>
+          <div class="avatar" id="d-av" onclick="ir('s-perfil')" style="cursor:pointer;width:42px;height:42px;font-size:16px"></div>
+        </div>
+      </div>
+      <div style="padding:18px 20px 0">
+        <div class="mgrid">
+          <div class="met"><div class="met-n" id="m-t">–</div><div class="met-l">Turmas</div></div>
+          <div class="met"><div class="met-n" id="m-a">–</div><div class="met-l">Alunos</div></div>
+          <div class="met"><div class="met-n" id="m-h">0</div><div class="met-l">Aulas hoje</div></div>
+        </div>
+        <p style="font-size:11px;font-weight:500;color:var(--text-3);margin-bottom:10px;letter-spacing:.06em;text-transform:uppercase">Acesso rápido</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px">
+          <button onclick="aba('turmas')" class="card" style="text-align:left;cursor:pointer;padding:14px">
+            <div style="font-size:26px;margin-bottom:8px">👥</div>
+            <div style="font-size:13px;font-weight:500">Turmas</div>
+            <div style="font-size:11px;color:var(--text-3);margin-top:2px">Ver e gerir</div>
+          </button>
+          <button onclick="aba('assiduidade')" class="card" style="text-align:left;cursor:pointer;padding:14px">
+            <div style="font-size:26px;margin-bottom:8px">✅</div>
+            <div style="font-size:13px;font-weight:500">Assiduidade</div>
+            <div style="font-size:11px;color:var(--text-3);margin-top:2px">Registar aula</div>
+          </button>
+          <button onclick="aba('avaliacao')" class="card" style="text-align:left;cursor:pointer;padding:14px">
+            <div style="font-size:26px;margin-bottom:8px">🏆</div>
+            <div style="font-size:13px;font-weight:500">Avaliação</div>
+            <div style="font-size:11px;color:var(--text-3);margin-top:2px">Notas e níveis</div>
+          </button>
+          <button onclick="aba('horario')" class="card" style="text-align:left;cursor:pointer;padding:14px">
+            <div style="font-size:26px;margin-bottom:8px">📅</div>
+            <div style="font-size:13px;font-weight:500">Horário</div>
+            <div style="font-size:11px;color:var(--text-3);margin-top:2px">Ver semana</div>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TURMAS -->
+    <div id="tc-turmas" class="tc" style="display:none">
+      <div class="top-bar">
+        <h2 style="font-family:var(--fd);font-size:22px;font-weight:700;letter-spacing:-.5px">Turmas</h2>
+        <p style="font-size:13px;color:var(--text-2);margin-top:4px">As tuas turmas neste ano letivo</p>
+      </div>
+      <div style="padding:18px 20px 80px">
+        <div id="lista-turmas"><div class="spinner" style="margin-top:32px"></div></div>
+      </div>
+      <button class="fab" onclick="abrirModal('modal-turma')">+</button>
+    </div>
+
+    <!-- ALUNOS de uma turma -->
+    <div id="tc-alunos" class="tc" style="display:none">
+      <div class="top-bar">
+        <button onclick="aba('turmas')" style="font-size:13px;color:var(--text-2);margin-bottom:16px;display:flex;align-items:center;gap:5px">← Turmas</button>
+        <h2 style="font-family:var(--fd);font-size:22px;font-weight:700;letter-spacing:-.5px" id="titulo-turma">Alunos</h2>
+        <p style="font-size:13px;color:var(--text-2);margin-top:4px" id="sub-turma"></p>
+      </div>
+      <div style="padding:18px 20px 80px">
+        <div id="lista-alunos"><div class="spinner" style="margin-top:32px"></div></div>
+      </div>
+      <button class="fab" onclick="abrirModal('modal-aluno')">+</button>
+    </div>
+
+    <!-- ASSIDUIDADE -->
+    <div id="tc-assiduidade" class="tc" style="display:none">
+      <div class="top-bar">
+        <h2 style="font-family:var(--fd);font-size:22px;font-weight:700;letter-spacing:-.5px">Assiduidade</h2>
+        <p style="font-size:13px;color:var(--text-2);margin-top:4px">Registo de presenças por aula</p>
+      </div>
+      <div style="padding:40px 22px;text-align:center">
+        <div style="font-size:48px;margin-bottom:16px">✅</div>
+        <p style="font-family:var(--fd);font-size:17px;font-weight:700;margin-bottom:8px">Em breve</p>
+        <p style="font-size:13px;color:var(--text-2)">Aqui vais registar presenças e faltas aula a aula.</p>
+      </div>
+    </div>
+
+    <!-- AVALIAÇÃO -->
+    <div id="tc-avaliacao" class="tc" style="display:none">
+      <div class="top-bar">
+        <h2 style="font-family:var(--fd);font-size:22px;font-weight:700;letter-spacing:-.5px">Avaliação</h2>
+        <p style="font-size:13px;color:var(--text-2);margin-top:4px">Grelhas, níveis e notas</p>
+      </div>
+      <div style="padding:40px 22px;text-align:center">
+        <div style="font-size:48px;margin-bottom:16px">🏆</div>
+        <p style="font-family:var(--fd);font-size:17px;font-weight:700;margin-bottom:8px">Em breve</p>
+        <p style="font-size:13px;color:var(--text-2)">Avaliações por exercício, níveis PNEF e notas finais.</p>
+      </div>
+    </div>
+
+    <!-- HORÁRIO -->
+    <div id="tc-horario" class="tc" style="display:none">
+      <div class="top-bar">
+        <h2 style="font-family:var(--fd);font-size:22px;font-weight:700;letter-spacing:-.5px">Horário</h2>
+        <p style="font-size:13px;color:var(--text-2);margin-top:4px">Vista semanal das tuas aulas</p>
+      </div>
+      <div style="padding:40px 22px;text-align:center">
+        <div style="font-size:48px;margin-bottom:16px">📅</div>
+        <p style="font-family:var(--fd);font-size:17px;font-weight:700;margin-bottom:8px">Em breve</p>
+        <p style="font-size:13px;color:var(--text-2)">Vista semanal das tuas aulas por turma.</p>
+      </div>
+    </div>
+
+  </div>
+  <nav class="nav">
+    <div class="ni on" id="ni-inicio" onclick="aba('inicio')"><span class="ni-ico">🏠</span><span class="ni-lbl">Início</span></div>
+    <div class="ni" id="ni-turmas" onclick="aba('turmas')"><span class="ni-ico">👥</span><span class="ni-lbl">Turmas</span></div>
+    <div class="ni" id="ni-assiduidade" onclick="aba('assiduidade')"><span class="ni-ico">✅</span><span class="ni-lbl">Assiduidade</span></div>
+    <div class="ni" id="ni-avaliacao" onclick="aba('avaliacao')"><span class="ni-ico">🏆</span><span class="ni-lbl">Avaliação</span></div>
+    <div class="ni" id="ni-horario" onclick="aba('horario')"><span class="ni-ico">📅</span><span class="ni-lbl">Horário</span></div>
+  </nav>
+</div>
+
+<!-- PERFIL -->
+<div id="s-perfil" class="screen">
+  <div class="top-bar">
+    <button onclick="ir('s-dash')" style="font-size:13px;color:var(--text-2);margin-bottom:20px;display:flex;align-items:center;gap:5px">← Voltar</button>
+    <div style="display:flex;align-items:center;gap:14px">
+      <div class="avatar" id="p-av" style="width:52px;height:52px;font-size:18px"></div>
+      <div>
+        <p style="font-family:var(--fd);font-size:18px;font-weight:700;letter-spacing:-.3px" id="p-nome"></p>
+        <p style="font-size:12px;color:var(--text-2);margin-top:2px" id="p-role"></p>
+      </div>
+    </div>
+  </div>
+  <div class="body">
+    <div class="card" style="margin-bottom:10px">
+      <p style="font-size:11px;color:var(--text-3);margin-bottom:3px">Email</p>
+      <p style="font-size:14px;font-weight:500" id="p-email"></p>
+    </div>
+    <div class="card" style="margin-bottom:10px">
+      <p style="font-size:11px;color:var(--text-3);margin-bottom:3px">Escola</p>
+      <p style="font-size:14px;font-weight:500" id="p-escola"></p>
+    </div>
+    <div class="card" style="margin-bottom:24px">
+      <p style="font-size:11px;color:var(--text-3);margin-bottom:3px">Turmas</p>
+      <p style="font-size:14px;font-weight:500" id="p-turmas"></p>
+    </div>
+    <div class="sp"></div>
+    <button class="btn-outline btn" onclick="logout()" style="color:var(--red);border-color:rgba(248,81,73,.3)">Terminar sessão</button>
+  </div>
+</div>
+
+<!-- MODAL: NOVA TURMA -->
+<div class="modal-bg" id="modal-turma" onclick="fecharFora(event,'modal-turma')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h3 style="font-family:var(--fd);font-size:18px;font-weight:700;margin-bottom:5px">Nova turma</h3>
+    <p style="font-size:13px;color:var(--text-2);margin-bottom:18px">Adiciona uma turma ao teu horário</p>
+    <div class="fg">
+      <label class="lbl">Nome da turma</label>
+      <input type="text" id="nt-nome" placeholder="Ex: 7.º A" autocomplete="off"/>
+    </div>
+    <div class="fg">
+      <label class="lbl">Ciclo / Ano</label>
+      <select id="nt-ciclo">
+        <option value="">Seleciona...</option>
+        <option>2.º ciclo — 5.º ano</option>
+        <option>2.º ciclo — 6.º ano</option>
+        <option>3.º ciclo — 7.º ano</option>
+        <option>3.º ciclo — 8.º ano</option>
+        <option>3.º ciclo — 9.º ano</option>
+        <option>Secundário — 10.º ano</option>
+        <option>Secundário — 11.º ano</option>
+        <option>Secundário — 12.º ano</option>
+      </select>
+    </div>
+    <div id="err-nt" class="err"></div>
+    <div style="display:flex;gap:10px;margin-top:6px">
+      <button class="btn-outline btn" style="flex:1;width:auto;padding:13px" onclick="fecharModal('modal-turma')">Cancelar</button>
+      <button class="btn btn-green" style="flex:2" onclick="criarTurma()">Criar turma</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: NOVO ALUNO -->
+<div class="modal-bg" id="modal-aluno" onclick="fecharFora(event,'modal-aluno')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h3 style="font-family:var(--fd);font-size:18px;font-weight:700;margin-bottom:5px">Novo aluno</h3>
+    <p style="font-size:13px;color:var(--text-2);margin-bottom:18px" id="modal-aluno-sub"></p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="fg">
+        <label class="lbl">Nome</label>
+        <input type="text" id="al-nome" placeholder="Ex: João" autocomplete="off"/>
+      </div>
+      <div class="fg">
+        <label class="lbl">Apelido</label>
+        <input type="text" id="al-apelido" placeholder="Ex: Silva" autocomplete="off"/>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="fg">
+        <label class="lbl">N.º aluno</label>
+        <input type="number" id="al-num" placeholder="Ex: 12" inputmode="numeric"/>
+      </div>
+      <div class="fg">
+        <label class="lbl">Género</label>
+        <select id="al-gen">
+          <option value="">–</option>
+          <option value="M">Masculino</option>
+          <option value="F">Feminino</option>
+          <option value="Outro">Outro</option>
+        </select>
+      </div>
+    </div>
+    <div class="fg">
+      <label class="lbl">Data de nascimento</label>
+      <input type="date" id="al-nasc"/>
+    </div>
+    <div id="err-al" class="err"></div>
+    <div style="display:flex;gap:10px;margin-top:6px">
+      <button class="btn-outline btn" style="flex:1;width:auto;padding:13px" onclick="fecharModal('modal-aluno')">Cancelar</button>
+      <button class="btn btn-green" style="flex:2" onclick="criarAluno()">Adicionar</button>
+    </div>
+  </div>
+</div>
+
+</div>
+<script>
+// ── SUPABASE ──
+const sb = supabase.createClient(
+  'https://oydylfjnxoyxglxswlcr.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im95ZHlsZmpueG95eGdseHN3bGNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2Mjk3NzIsImV4cCI6MjA5NzIwNTc3Mn0.Gp_RhSztkeK6bccouo3yF6EnMGN1vSdwOfVqXhhIWL0'
+)
+
+// ── ESTADO ──
+let prof = null, turmaAtiva = null
+
+// ── INIT ──
+async function init() {
+  const pid = localStorage.getItem('sp_prof_id')
+  if (pid) {
+    const { data } = await sb.from('professores')
+      .select('*, escola:escolas(nome), turmas(id)')
+      .eq('id', pid)
+      .maybeSingle()
+    if (data) { prof = data; renderDash(); ir('s-dash'); return }
+  }
+  ir('s-login')
+}
+
+// ── NAVEGAÇÃO ──
+function ir(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'))
+  document.getElementById(id).classList.add('active')
+  window.scrollTo(0,0)
+}
+
+function aba(id) {
+  document.querySelectorAll('.tc').forEach(t => t.style.display = 'none')
+  document.querySelectorAll('.ni').forEach(n => n.classList.remove('on'))
+  document.getElementById('tc-' + id).style.display = 'block'
+  const ni = document.getElementById('ni-' + id)
+  if (ni) ni.classList.add('on')
+  ir('s-dash')
+  if (id === 'turmas') carregarTurmas()
+}
+
+// ── DASHBOARD ──
+function renderDash() {
+  if (!prof) return
+  const nome = prof.nome || 'Professor'
+  const ini = nome[0].toUpperCase()
+  set('d-nome', nome); set('d-av', ini)
+  set('p-av', ini); set('p-nome', nome)
+  set('p-role', prof.role === 'admin' ? 'Administrador' : 'Professor de Educação Física')
+  set('p-email', prof.email || '–')
+  set('p-escola', prof.escola?.nome || '–')
+  const nt = prof.turmas?.length || 0
+  set('m-t', nt)
+  set('p-turmas', nt + ' turma(s)')
+  if (nt > 0) carregarNAlunos()
+  else set('m-a', '0')
+}
+
+async function carregarNAlunos() {
+  const ids = prof.turmas.map(t => t.id)
+  const { count } = await sb.from('alunos').select('id', {count:'exact',head:true}).in('turma_id', ids)
+  set('m-a', count || 0)
+}
+
+// ── LOGIN CÓDIGO ──
+function initCelulas() {}
+
+function formatarCodigo(el) {
+  let val = el.value.replace(/[^a-zA-Z0-9]/g,'').toUpperCase().slice(0,8)
+  if (val.length > 4) val = val.slice(0,4) + '-' + val.slice(4)
+  el.value = val
+  el.style.borderColor = getCodigo().length === 8 ? 'var(--green)' : 'var(--border)'
+  chkCodigo()
+}
+
+function getCodigo() {
+  return (document.getElementById('codigo-input').value || '').replace(/[^a-zA-Z0-9]/g,'').toUpperCase()
+}
+
+function chkCodigo() {
+  document.getElementById('btn-code').disabled = getCodigo().length < 8
+  document.getElementById('err-code').classList.remove('show')
+}
+
+async function submitCodigo() {
+  const cod = getCodigo()
+  if (cod.length < 8) return
+  setBtnLoad('btn-code', 'A verificar...')
+  showErr('err-code', '')
+  try {
+    // verificar código
+    const { data: cd, error: ce } = await sb.from('codigos_acesso')
+      .select('professor_id')
+      .eq('codigo', cod)
+      .eq('utilizado', false)
+      .gt('expira_em', new Date().toISOString())
+      .maybeSingle()
+    if (ce) throw new Error('Erro de ligação: ' + ce.message)
+    if (!cd) throw new Error('Código inválido ou expirado')
+
+    // buscar professor
+    const { data: pd, error: pe } = await sb.from('professores')
+      .select('*, escola:escolas(nome), turmas(id)')
+      .eq('id', cd.professor_id)
+      .maybeSingle()
+    if (pe || !pd) throw new Error('Professor não encontrado')
+
+    // marcar código usado
+    await sb.from('codigos_acesso').update({
+      utilizado: true, utilizado_em: new Date().toISOString()
+    }).eq('codigo', cod)
+
+    // guardar sessão local e entrar
+    localStorage.setItem('sp_prof_id', pd.id)
+    prof = pd
+    renderDash()
+    ir('s-dash')
+
+  } catch(e) {
+    showErr('err-code', e.message)
+    const ci = document.getElementById('codigo-input')
+    ci.style.borderColor = 'var(--red)'
+    setTimeout(() => ci.style.borderColor = 'var(--border)', 1400)
+  } finally { resetBtn('btn-code', 'Continuar →') }
+}
+
+// ── LOGIN EMAIL ── (não usado nesta versão)
+function chkEmail() {}
+async function submitEmail() { showErr('err-email', 'Usa o código de acesso para entrar.') }
+
+// ── ATIVAR CONTA ── (não usado)
+function prepararAtivar() {}
+function chkAtivar() {}
+async function submitAtivar() {}
+
+// ── TURMAS ──
+async function carregarTurmas() {
+  if (!prof) return
+  const el = document.getElementById('lista-turmas')
+  el.innerHTML = '<div class="spinner" style="margin-top:32px"></div>'
+  const { data } = await sb.from('turmas')
+    .select('*, al:alunos(count)')
+    .eq('professor_id', prof.id)
+    .order('nome')
+  if (!data || !data.length) {
+    el.innerHTML = `<div style="text-align:center;padding:40px 0">
+      <div style="font-size:40px;margin-bottom:12px">👥</div>
+      <p style="font-family:var(--fd);font-size:16px;font-weight:700;margin-bottom:6px">Sem turmas ainda</p>
+      <p style="font-size:13px;color:var(--text-2)">Toca no + para criar a primeira turma</p>
+    </div>`
+    return
+  }
+  el.innerHTML = data.map(t => `
+    <div class="li" onclick="verAlunos('${t.id}','${t.nome}','${t.ciclo||''}')" style="cursor:pointer">
+      <div class="avatar" style="border-radius:12px;background:var(--green-dim);color:var(--green);font-size:15px">${t.nome[0]}</div>
+      <div class="li-info">
+        <div class="li-name">${t.nome}</div>
+        <div class="li-sub">${t.ciclo||''} · ${t.al?.[0]?.count??0} alunos</div>
+      </div>
+      <span style="color:var(--text-3);font-size:18px">›</span>
+    </div>`).join('')
+}
+
+async function criarTurma() {
+  const nome = document.getElementById('nt-nome').value.trim()
+  const ciclo = document.getElementById('nt-ciclo').value
+  if (!nome || !ciclo) { showErr('err-nt','Preenche o nome e o ciclo'); return }
+  const btn = document.getElementById('btn-code')
+  try {
+    const { error } = await sb.from('turmas').insert({
+      nome, ciclo,
+      professor_id: prof.id,
+      escola_id: prof.escola_id,
+      ano_letivo: '2025/2026'
+    })
+    if (error) throw error
+    fecharModal('modal-turma')
+    document.getElementById('nt-nome').value = ''
+    document.getElementById('nt-ciclo').value = ''
+    showErr('err-nt','')
+    await carregarTurmas()
+    // recarregar turmas
+    const { data: td } = await sb.from('turmas').select('id').eq('professor_id', prof.id)
+    prof.turmas = td || []
+    renderDash()
+  } catch(e) { showErr('err-nt','Erro ao criar turma') }
+}
+
+// ── ALUNOS ──
+function verAlunos(id, nome, ciclo) {
+  turmaAtiva = { id, nome, ciclo }
+  set('titulo-turma', nome)
+  set('sub-turma', ciclo)
+  set('modal-aluno-sub', `Adicionar aluno à turma ${nome}`)
+  document.querySelectorAll('.tc').forEach(t => t.style.display = 'none')
+  document.getElementById('tc-alunos').style.display = 'block'
+  carregarAlunos()
+}
+
+async function carregarAlunos() {
+  if (!turmaAtiva) return
+  const el = document.getElementById('lista-alunos')
+  el.innerHTML = '<div class="spinner" style="margin-top:32px"></div>'
+  const { data } = await sb.from('alunos')
+    .select('*')
+    .eq('turma_id', turmaAtiva.id)
+    .order('numero_aluno', { ascending: true })
+  if (!data || !data.length) {
+    el.innerHTML = `<div style="text-align:center;padding:40px 0">
+      <div style="font-size:40px;margin-bottom:12px">🧑‍🎓</div>
+      <p style="font-family:var(--fd);font-size:16px;font-weight:700;margin-bottom:6px">Sem alunos ainda</p>
+      <p style="font-size:13px;color:var(--text-2)">Toca no + para adicionar o primeiro aluno</p>
+    </div>`
+    return
+  }
+  el.innerHTML = data.map(a => `
+    <div class="li">
+      <div class="avatar" style="font-size:13px">${a.nome[0]}${a.apelido[0]}</div>
+      <div class="li-info">
+        <div class="li-name">${a.nome} ${a.apelido}</div>
+        <div class="li-sub">N.º ${a.numero_aluno||'–'} · ${a.genero||'–'}</div>
+      </div>
+      ${a.necessidades_especiais ? '<span class="badge bg-amber">NEE</span>' : ''}
+    </div>`).join('')
+}
+
+async function criarAluno() {
+  const nome = document.getElementById('al-nome').value.trim()
+  const apelido = document.getElementById('al-apelido').value.trim()
+  if (!nome || !apelido) { showErr('err-al','Nome e apelido são obrigatórios'); return }
+  try {
+    const { error } = await sb.from('alunos').insert({
+      nome, apelido,
+      numero_aluno: parseInt(document.getElementById('al-num').value)||null,
+      genero: document.getElementById('al-gen').value||null,
+      data_nascimento: document.getElementById('al-nasc').value||null,
+      turma_id: turmaAtiva.id,
+      escola_id: prof.escola_id
+    })
+    if (error) throw error
+    fecharModal('modal-aluno')
+    document.getElementById('al-nome').value=''
+    document.getElementById('al-apelido').value=''
+    document.getElementById('al-num').value=''
+    document.getElementById('al-gen').value=''
+    document.getElementById('al-nasc').value=''
+    showErr('err-al','')
+    carregarAlunos()
+    carregarNAlunos()
+  } catch(e) { showErr('err-al','Erro ao adicionar aluno') }
+}
+
+// ── UTILS ──
+function modo(m) {
+  document.getElementById('m-code').style.display = m==='code'?'block':'none'
+  document.getElementById('m-email').style.display = m==='email'?'block':'none'
+  document.getElementById('t-code').classList.toggle('on', m==='code')
+  document.getElementById('t-email').classList.toggle('on', m==='email')
+  showErr('err-code',''); showErr('err-email','')
+}
+
+function toggleVer(inp, btn) {
+  const el = document.getElementById(inp)
+  el.type = el.type==='password'?'text':'password'
+  document.getElementById(btn).textContent = el.type==='password'?'👁️':'🙈'
+}
+
+function set(id, val) { const el=document.getElementById(id); if(el) el.textContent=val }
+function showErr(id, msg) { const el=document.getElementById(id); if(!el)return; el.textContent=msg; el.classList.toggle('show',!!msg) }
+function setBtnLoad(id, txt) { const b=document.getElementById(id); if(!b)return; b.disabled=true; b.textContent=txt }
+function resetBtn(id, txt) { const b=document.getElementById(id); if(!b)return; b.disabled=false; b.textContent=txt }
+function abrirModal(id) { document.getElementById(id).classList.add('open') }
+function fecharModal(id) { document.getElementById(id).classList.remove('open') }
+function fecharFora(e,id) { if(e.target.id===id) fecharModal(id) }
+
+function logout() {
+  localStorage.removeItem('sp_prof_id')
+  prof = null
+  ir('s-login')
+}
+
+// ── START ──
+initCelulas()
+init()
+</script>
+</body>
+</html>
