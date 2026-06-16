@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<meta name="theme-color" content="#F0F4FF"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<title>SportProf</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@700&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#F5F7FF;
+  --white:#FFFFFF;
+  --surface:#F0F3FF;
+  --border:#E2E8FF;
+  --border2:#CDD5F8;
+  --blue:#4361EE;
+  --blue-l:#EEF1FF;
+  --blue-m:#C7D0FB;
+  --blue-d:#2D48C8;
+  --green:#06C270;
+  --green-l:#E6FAF2;
+  --red:#FF4D4F;
+  --red-l:#FFF1F1;
+  --amber:#F59E0B;
+  --amber-l:#FFFBEB;
+  --purple:#7C3AED;
+  --purple-l:#F3EEFF;
+  --text:#0F172A;
+  --text2:#475569;
+  --text3:#94A3B8;
+  --r:12px;--rl:18px;--rxl:24px;
+  --f:'Plus Jakarta Sans',sans-serif;
+  --fm:'Space Mono',monospace;
+  --shadow:0 1px 3px rgba(67,97,238,.08),0 4px 16px rgba(67,97,238,.06);
+  --shadow-lg:0 4px 24px rgba(67,97,238,.12),0 1px 4px rgba(67,97,238,.08);
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f);-webkit-font-smoothing:antialiased}
+#app{min-height:100dvh}
+button{cursor:pointer;font-family:var(--f);border:none;background:none;color:inherit}
+input,select{font-family:var(--f);color:var(--text);background:var(--white);border:1.5px solid var(--border);border-radius:var(--r);padding:13px 16px;width:100%;font-size:15px;outline:none;-webkit-appearance:none;transition:border-color .2s,box-shadow .2s}
+input:focus,select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(67,97,238,.12)}
+input::placeholder{color:var(--text3)}
+select option{background:var(--white)}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.anim{animation:fadeUp .32s cubic-bezier(.22,1,.36,1) both}
+
+.screen{display:none;flex-direction:column;min-height:100dvh}
+.screen.active{display:flex}
+
+/* BOTÕES */
+.btn{width:100%;padding:15px;border-radius:var(--r);font-family:var(--f);font-size:15px;font-weight:700;transition:all .18s;border:none;cursor:pointer;letter-spacing:-.01em}
+.btn-blue{background:var(--blue);color:#fff;box-shadow:0 4px 14px rgba(67,97,238,.35)}
+.btn-blue:hover{background:var(--blue-d);transform:translateY(-1px)}
+.btn-blue:active{transform:translateY(0)}
+.btn-blue:disabled{background:var(--border2);color:var(--text3);box-shadow:none;cursor:not-allowed;transform:none}
+.btn-outline{background:var(--white);border:1.5px solid var(--border2);color:var(--text2);border-radius:var(--r);padding:13px}
+.btn-ghost{background:none;border:none;color:var(--blue);font-size:14px;font-weight:600;padding:4px}
+
+/* LABELS E CAMPOS */
+.lbl{display:block;font-size:12px;font-weight:700;color:var(--text2);margin-bottom:7px;letter-spacing:.04em;text-transform:uppercase}
+.fg{margin-bottom:16px}
+
+/* ERROS */
+.err{background:var(--red-l);border:1.5px solid #FFD0D0;border-radius:var(--r);padding:11px 14px;font-size:13px;color:var(--red);margin-bottom:14px;display:none;font-weight:500}
+.err.show{display:flex;align-items:center;gap:8px}
+.err::before{content:'⚠';font-size:15px}
+
+/* SPINNER */
+.spinner{width:24px;height:24px;border:2.5px solid var(--border2);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto}
+.sp{flex:1}
+
+/* ── LOGIN ── */
+.login-wrap{min-height:100dvh;display:flex;flex-direction:column}
+.login-hero{background:linear-gradient(145deg,#4361EE 0%,#7C3AED 100%);padding:56px 28px 36px;position:relative;overflow:hidden;flex-shrink:0}
+.login-hero::before{content:'';position:absolute;width:280px;height:280px;border-radius:50%;background:rgba(255,255,255,.06);top:-80px;right:-80px}
+.login-hero::after{content:'';position:absolute;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,.04);bottom:-60px;left:-40px}
+.logo-row{display:flex;align-items:center;gap:10px;margin-bottom:32px;position:relative;z-index:1}
+.logo-ico{width:38px;height:38px;background:rgba(255,255,255,.2);border-radius:11px;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px)}
+.logo-nm{font-size:18px;font-weight:800;color:#fff;letter-spacing:-.5px}
+.hero-title{font-size:30px;font-weight:800;color:#fff;line-height:1.15;letter-spacing:-.8px;margin-bottom:10px;position:relative;z-index:1}
+.hero-sub{font-size:14px;color:rgba(255,255,255,.75);line-height:1.6;position:relative;z-index:1}
+.login-body{flex:1;padding:28px 24px 48px;display:flex;flex-direction:column}
+
+/* TABS */
+.tabs{display:flex;background:var(--surface);border-radius:var(--r);padding:4px;margin-bottom:28px;gap:4px}
+.tab{flex:1;padding:9px 8px;border-radius:9px;font-size:13px;font-weight:700;transition:all .2s;background:transparent;color:var(--text3);letter-spacing:-.01em}
+.tab.on{background:var(--white);color:var(--blue);box-shadow:var(--shadow)}
+
+/* CÓDIGO INPUT */
+.code-wrap{background:var(--white);border:2px solid var(--border);border-radius:var(--rl);padding:4px;transition:border-color .2s,box-shadow .2s;margin-bottom:8px}
+.code-wrap:focus-within{border-color:var(--blue);box-shadow:0 0 0 3px rgba(67,97,238,.12)}
+.code-wrap.bad{border-color:var(--red);box-shadow:0 0 0 3px rgba(255,77,79,.1)}
+#codigo-input{background:transparent;border:none;box-shadow:none;text-align:center;font-family:var(--fm);font-size:26px;font-weight:700;color:var(--blue);letter-spacing:.2em;padding:16px 12px;width:100%}
+#codigo-input:focus{border:none;box-shadow:none}
+#codigo-input::placeholder{color:var(--border2);letter-spacing:.1em;font-size:22px}
+
+/* ── DASHBOARD ── */
+.topbar{background:var(--white);padding:52px 20px 18px;border-bottom:1.5px solid var(--border);position:sticky;top:0;z-index:10}
+.topbar-row{display:flex;align-items:center;justify-content:space-between}
+.page-title{font-size:22px;font-weight:800;letter-spacing:-.5px;color:var(--text)}
+.page-sub{font-size:13px;color:var(--text3);margin-top:3px}
+
+/* AVATAR */
+.avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--purple));display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#fff;flex-shrink:0;cursor:pointer}
+.avatar-lg{width:56px;height:56px;font-size:20px;border-radius:18px}
+
+/* MÉTRICAS */
+.mgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:16px 20px 0}
+.met{background:var(--white);border:1.5px solid var(--border);border-radius:var(--rl);padding:14px 12px;text-align:center;box-shadow:var(--shadow)}
+.met-n{font-size:24px;font-weight:800;color:var(--blue);letter-spacing:-.5px}
+.met-l{font-size:11px;color:var(--text3);margin-top:3px;font-weight:600;letter-spacing:.03em}
+
+/* CARDS MENU */
+.menu-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:16px 20px}
+.menu-card{background:var(--white);border:1.5px solid var(--border);border-radius:var(--rl);padding:18px 16px;text-align:left;cursor:pointer;transition:all .2s;box-shadow:var(--shadow)}
+.menu-card:hover{border-color:var(--blue-m);transform:translateY(-2px);box-shadow:var(--shadow-lg)}
+.menu-card:active{transform:translateY(0)}
+.mc-ico{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:12px}
+.mc-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:3px}
+.mc-sub{font-size:12px;color:var(--text3)}
+
+/* NAV */
+.nav{display:flex;background:var(--white);border-top:1.5px solid var(--border);padding:8px 0 calc(8px + env(safe-area-inset-bottom,0px));position:sticky;bottom:0;z-index:10}
+.ni{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:5px 0;cursor:pointer}
+.ni-ico{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;transition:all .2s}
+.ni-lbl{font-size:10px;font-weight:700;color:var(--text3);transition:color .2s;letter-spacing:.02em}
+.ni.on .ni-ico{background:var(--blue-l)}
+.ni.on .ni-lbl{color:var(--blue)}
+
+/* LISTA */
+.list-wrap{padding:16px 20px 100px}
+.li{display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--white);border:1.5px solid var(--border);border-radius:var(--rl);margin-bottom:10px;cursor:pointer;transition:all .2s;box-shadow:var(--shadow)}
+.li:hover{border-color:var(--blue-m);transform:translateX(2px)}
+.li-ico{width:44px;height:44px;border-radius:12px;background:var(--blue-l);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.li-info{flex:1;min-width:0}
+.li-name{font-size:14px;font-weight:700;color:var(--text);margin-bottom:2px}
+.li-sub{font-size:12px;color:var(--text3)}
+.li-arr{color:var(--text3);font-size:18px;flex-shrink:0}
+
+/* BADGE */
+.badge{display:inline-flex;align-items:center;font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;letter-spacing:.02em}
+.b-blue{background:var(--blue-l);color:var(--blue)}
+.b-green{background:var(--green-l);color:#059254}
+.b-amber{background:var(--amber-l);color:#B45309}
+.b-purple{background:var(--purple-l);color:var(--purple)}
+
+/* FAB */
+.fab{position:fixed;bottom:calc(72px + env(safe-area-inset-bottom,0px));right:20px;width:54px;height:54px;border-radius:50%;background:var(--blue);color:#fff;font-size:28px;display:flex;align-items:center;justify-content:center;z-index:20;border:none;cursor:pointer;box-shadow:0 4px 20px rgba(67,97,238,.4);font-weight:300;line-height:1;transition:all .2s}
+.fab:hover{transform:scale(1.08);box-shadow:0 6px 24px rgba(67,97,238,.5)}
+
+/* EMPTY STATE */
+.empty{text-align:center;padding:48px 24px}
+.empty-ico{width:72px;height:72px;border-radius:24px;background:var(--blue-l);display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 16px}
+.empty-title{font-size:17px;font-weight:800;color:var(--text);margin-bottom:8px}
+.empty-sub{font-size:14px;color:var(--text3);line-height:1.6}
+
+/* MODAL */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:50;align-items:flex-end;justify-content:center;backdrop-filter:blur(2px)}
+.modal-bg.open{display:flex}
+.modal{background:var(--white);border-radius:24px 24px 0 0;padding:8px 20px calc(28px + env(safe-area-inset-bottom,0px));width:100%;max-width:480px;animation:fadeUp .28s cubic-bezier(.22,1,.36,1)}
+.modal-handle{width:36px;height:4px;background:var(--border2);border-radius:2px;margin:12px auto 20px}
+.modal-title{font-size:18px;font-weight:800;margin-bottom:4px;letter-spacing:-.3px}
+.modal-sub{font-size:13px;color:var(--text3);margin-bottom:20px}
+
+/* PERFIL */
+.perfil-header{background:linear-gradient(145deg,#4361EE 0%,#7C3AED 100%);padding:52px 24px 28px}
+.perfil-card{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:var(--rl);padding:16px;display:flex;align-items:center;gap:14px;backdrop-filter:blur(8px)}
+.info-card{background:var(--white);border:1.5px solid var(--border);border-radius:var(--rl);padding:16px 18px;margin-bottom:12px;box-shadow:var(--shadow)}
+.info-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border)}
+.info-row:last-child{border-bottom:none;padding-bottom:0}
+.info-key{font-size:12px;color:var(--text3);font-weight:600;letter-spacing:.03em}
+.info-val{font-size:14px;font-weight:700;color:var(--text);text-align:right}
+
+/* EM BREVE */
+.coming{padding:32px 24px 100px}
+.coming-card{background:var(--white);border:1.5px solid var(--border);border-radius:var(--rxl);padding:32px 24px;text-align:center;box-shadow:var(--shadow)}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ══ LOADING ══ -->
+<div id="s-loading" class="screen active" style="align-items:center;justify-content:center;background:var(--bg)">
+  <div style="text-align:center">
+    <div style="width:52px;height:52px;background:linear-gradient(135deg,var(--blue),var(--purple));border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+    </div>
+    <div class="spinner"></div>
+  </div>
+</div>
+
+<!-- ══ LOGIN ══ -->
+<div id="s-login" class="screen">
+  <div class="login-hero">
+    <div class="logo-row">
+      <div class="logo-ico">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+      </div>
+      <span class="logo-nm">SportProf</span>
+    </div>
+    <h1 class="hero-title">A tua aula,<br>organizada. ⚡</h1>
+    <p class="hero-sub">Gestão de turmas, assiduidade e avaliações para professores de EF</p>
+  </div>
+  <div class="login-body anim">
+    <h2 style="font-size:19px;font-weight:800;letter-spacing:-.4px;margin-bottom:6px">Código de acesso</h2>
+    <p style="font-size:13px;color:var(--text3);margin-bottom:24px;line-height:1.6">Introduz o código que recebeste do administrador da escola.</p>
+    <div class="code-wrap" id="code-wrap">
+      <input id="codigo-input" type="text" maxlength="9" inputmode="text"
+        autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false"
+        placeholder="XXXX–XXXX" oninput="formatarCodigo(this)"/>
+    </div>
+    <p style="font-size:12px;color:var(--text3);margin-bottom:24px;text-align:center">Exemplo: <strong style="color:var(--blue);font-family:var(--fm)">ABCD–1234</strong></p>
+    <div id="err-code" class="err"></div>
+    <div class="sp"></div>
+    <button class="btn btn-blue" id="btn-code" onclick="submitCodigo()" disabled>Entrar →</button>
+    <p style="text-align:center;font-size:12px;color:var(--text3);margin-top:20px">O código é fornecido pelo administrador da escola.<br>Cada código só pode ser usado uma vez.</p>
+  </div>
+</div>
+
+<!-- ══ DASHBOARD ══ -->
+<div id="s-dash" class="screen">
+  <div style="flex:1;overflow-y:auto;background:var(--bg)">
+
+    <!-- INÍCIO -->
+    <div id="tc-inicio" class="tc">
+      <div class="topbar">
+        <div class="topbar-row">
+          <div>
+            <p style="font-size:12px;color:var(--text3);font-weight:600;margin-bottom:1px">Olá 👋</p>
+            <h1 class="page-title" id="d-nome">Professor</h1>
+          </div>
+          <div class="avatar" id="d-av" onclick="ir('s-perfil')"></div>
+        </div>
+      </div>
+      <div class="mgrid">
+        <div class="met"><div class="met-n" id="m-t">–</div><div class="met-l">Turmas</div></div>
+        <div class="met"><div class="met-n" id="m-a">–</div><div class="met-l">Alunos</div></div>
+        <div class="met"><div class="met-n" id="m-h">0</div><div class="met-l">Hoje</div></div>
+      </div>
+      <div style="padding:20px 20px 8px 20px">
+        <p style="font-size:12px;font-weight:700;color:var(--text3);letter-spacing:.05em;text-transform:uppercase">Módulos</p>
+      </div>
+      <div class="menu-grid">
+        <button onclick="aba('turmas')" class="menu-card">
+          <div class="mc-ico" style="background:#EEF1FF">👥</div>
+          <div class="mc-title">Turmas</div>
+          <div class="mc-sub">Gerir alunos</div>
+        </button>
+        <button onclick="aba('assiduidade')" class="menu-card">
+          <div class="mc-ico" style="background:#E6FAF2">✅</div>
+          <div class="mc-title">Assiduidade</div>
+          <div class="mc-sub">Registar aula</div>
+        </button>
+        <button onclick="aba('avaliacao')" class="menu-card">
+          <div class="mc-ico" style="background:#FFFBEB">🏆</div>
+          <div class="mc-title">Avaliação</div>
+          <div class="mc-sub">Notas e níveis</div>
+        </button>
+        <button onclick="aba('horario')" class="menu-card">
+          <div class="mc-ico" style="background:#F3EEFF">📅</div>
+          <div class="mc-title">Horário</div>
+          <div class="mc-sub">Ver semana</div>
+        </button>
+      </div>
+    </div>
+
+    <!-- TURMAS -->
+    <div id="tc-turmas" class="tc" style="display:none">
+      <div class="topbar">
+        <div class="topbar-row">
+          <div><h1 class="page-title">Turmas</h1><p class="page-sub">As tuas turmas este ano</p></div>
+          <button onclick="abrirModal('modal-turma')" style="width:38px;height:38px;background:var(--blue);border-radius:10px;color:#fff;font-size:22px;display:flex;align-items:center;justify-content:center">+</button>
+        </div>
+      </div>
+      <div class="list-wrap" id="lista-turmas" style="padding-bottom:80px">
+        <div class="spinner" style="margin-top:40px"></div>
+      </div>
+      <button class="fab" onclick="abrirModal('modal-turma')">+</button>
+    </div>
+
+    <!-- ALUNOS -->
+    <div id="tc-alunos" class="tc" style="display:none">
+      <div class="topbar">
+        <button onclick="aba('turmas')" style="display:flex;align-items:center;gap:5px;font-size:13px;color:var(--blue);font-weight:700;margin-bottom:12px">← Turmas</button>
+        <div class="topbar-row">
+          <div><h1 class="page-title" id="titulo-turma">Alunos</h1><p class="page-sub" id="sub-turma"></p></div>
+          <button onclick="abrirModal('modal-aluno')" style="width:38px;height:38px;background:var(--blue);border-radius:10px;color:#fff;font-size:22px;display:flex;align-items:center;justify-content:center">+</button>
+        </div>
+      </div>
+      <div class="list-wrap" id="lista-alunos" style="padding-bottom:80px">
+        <div class="spinner" style="margin-top:40px"></div>
+      </div>
+      <button class="fab" onclick="abrirModal('modal-aluno')">+</button>
+    </div>
+
+    <!-- ASSIDUIDADE -->
+    <div id="tc-assiduidade" class="tc" style="display:none">
+      <div class="topbar"><h1 class="page-title">Assiduidade</h1><p class="page-sub">Registo de presenças</p></div>
+      <div class="coming">
+        <div class="coming-card">
+          <div class="empty-ico" style="background:#E6FAF2;margin:0 auto 16px">✅</div>
+          <p class="empty-title">Em breve</p>
+          <p class="empty-sub">Vais poder registar presenças e faltas aula a aula, com histórico por aluno.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- AVALIAÇÃO -->
+    <div id="tc-avaliacao" class="tc" style="display:none">
+      <div class="topbar"><h1 class="page-title">Avaliação</h1><p class="page-sub">Grelhas e notas</p></div>
+      <div class="coming">
+        <div class="coming-card">
+          <div class="empty-ico" style="background:#FFFBEB;margin:0 auto 16px">🏆</div>
+          <p class="empty-title">Em breve</p>
+          <p class="empty-sub">Avaliações por exercício, níveis PNEF (1–5) e notas finais por período.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- HORÁRIO -->
+    <div id="tc-horario" class="tc" style="display:none">
+      <div class="topbar"><h1 class="page-title">Horário</h1><p class="page-sub">Vista semanal</p></div>
+      <div class="coming">
+        <div class="coming-card">
+          <div class="empty-ico" style="background:#F3EEFF;margin:0 auto 16px">📅</div>
+          <p class="empty-title">Em breve</p>
+          <p class="empty-sub">Vista semanal das tuas aulas por turma, com horário e sala.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <nav class="nav">
+    <div class="ni on" id="ni-inicio" onclick="aba('inicio')"><div class="ni-ico">🏠</div><span class="ni-lbl">Início</span></div>
+    <div class="ni" id="ni-turmas" onclick="aba('turmas')"><div class="ni-ico">👥</div><span class="ni-lbl">Turmas</span></div>
+    <div class="ni" id="ni-assiduidade" onclick="aba('assiduidade')"><div class="ni-ico">✅</div><span class="ni-lbl">Assiduidade</span></div>
+    <div class="ni" id="ni-avaliacao" onclick="aba('avaliacao')"><div class="ni-ico">🏆</div><span class="ni-lbl">Avaliação</span></div>
+    <div class="ni" id="ni-horario" onclick="aba('horario')"><div class="ni-ico">📅</div><span class="ni-lbl">Horário</span></div>
+  </nav>
+</div>
+
+<!-- ══ PERFIL ══ -->
+<div id="s-perfil" class="screen">
+  <div class="perfil-header">
+    <button onclick="ir('s-dash')" style="display:flex;align-items:center;gap:5px;font-size:13px;color:rgba(255,255,255,.8);font-weight:700;margin-bottom:20px">← Voltar</button>
+    <div class="perfil-card">
+      <div class="avatar avatar-lg" id="p-av"></div>
+      <div>
+        <p style="font-size:17px;font-weight:800;color:#fff;letter-spacing:-.3px" id="p-nome"></p>
+        <p style="font-size:12px;color:rgba(255,255,255,.7);margin-top:3px" id="p-role"></p>
+      </div>
+    </div>
+  </div>
+  <div style="padding:20px 20px 48px;background:var(--bg);flex:1">
+    <div class="info-card">
+      <div class="info-row"><span class="info-key">Email</span><span class="info-val" id="p-email"></span></div>
+      <div class="info-row"><span class="info-key">Escola</span><span class="info-val" id="p-escola"></span></div>
+      <div class="info-row"><span class="info-key">Turmas</span><span class="info-val" id="p-turmas"></span></div>
+    </div>
+    <button onclick="logout()" style="width:100%;padding:14px;background:var(--red-l);border:1.5px solid #FFD0D0;border-radius:var(--r);color:var(--red);font-size:14px;font-weight:700;margin-top:8px">Terminar sessão</button>
+  </div>
+</div>
+
+<!-- ══ MODAL: NOVA TURMA ══ -->
+<div class="modal-bg" id="modal-turma" onclick="fecharFora(event,'modal-turma')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <p class="modal-title">Nova turma</p>
+    <p class="modal-sub">Adiciona uma turma ao teu ano letivo</p>
+    <div class="fg">
+      <label class="lbl">Nome da turma</label>
+      <input type="text" id="nt-nome" placeholder="Ex: 7.º A" autocomplete="off"/>
+    </div>
+    <div class="fg">
+      <label class="lbl">Ciclo / Ano</label>
+      <select id="nt-ciclo">
+        <option value="">Seleciona...</option>
+        <option>2.º ciclo — 5.º ano</option>
+        <option>2.º ciclo — 6.º ano</option>
+        <option>3.º ciclo — 7.º ano</option>
+        <option>3.º ciclo — 8.º ano</option>
+        <option>3.º ciclo — 9.º ano</option>
+        <option>Secundário — 10.º ano</option>
+        <option>Secundário — 11.º ano</option>
+        <option>Secundário — 12.º ano</option>
+      </select>
+    </div>
+    <div id="err-nt" class="err"></div>
+    <div style="display:flex;gap:10px;margin-top:4px">
+      <button class="btn btn-outline" style="flex:1;width:auto;padding:13px" onclick="fecharModal('modal-turma')">Cancelar</button>
+      <button class="btn btn-blue" style="flex:2" onclick="criarTurma()">Criar turma</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: NOVO ALUNO ══ -->
+<div class="modal-bg" id="modal-aluno" onclick="fecharFora(event,'modal-aluno')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <p class="modal-title">Novo aluno</p>
+    <p class="modal-sub" id="modal-aluno-sub">Adicionar aluno à turma</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="fg"><label class="lbl">Nome</label><input type="text" id="al-nome" placeholder="João" autocomplete="off"/></div>
+      <div class="fg"><label class="lbl">Apelido</label><input type="text" id="al-apelido" placeholder="Silva" autocomplete="off"/></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="fg"><label class="lbl">N.º aluno</label><input type="number" id="al-num" placeholder="12" inputmode="numeric"/></div>
+      <div class="fg"><label class="lbl">Género</label>
+        <select id="al-gen"><option value="">–</option><option value="M">Masc.</option><option value="F">Fem.</option><option value="Outro">Outro</option></select>
+      </div>
+    </div>
+    <div class="fg"><label class="lbl">Data de nascimento</label><input type="date" id="al-nasc"/></div>
+    <div id="err-al" class="err"></div>
+    <div style="display:flex;gap:10px;margin-top:4px">
+      <button class="btn btn-outline" style="flex:1;width:auto;padding:13px" onclick="fecharModal('modal-aluno')">Cancelar</button>
+      <button class="btn btn-blue" style="flex:2" onclick="criarAluno()">Adicionar</button>
+    </div>
+  </div>
+</div>
+
+</div>
+<script>
+const sb = supabase.createClient(
+  'https://oydylfjnxoyxglxswlcr.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im95ZHlsZmpueG95eGdseHN3bGNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2Mjk3NzIsImV4cCI6MjA5NzIwNTc3Mn0.Gp_RhSztkeK6bccouo3yF6EnMGN1vSdwOfVqXhhIWL0'
+)
+
+let prof = null, turmaAtiva = null
+
+async function init() {
+  const pid = localStorage.getItem('sp_prof_id')
+  if (pid) {
+    const { data } = await sb.from('professores')
+      .select('*, escola:escolas(nome), turmas(id)')
+      .eq('id', pid).maybeSingle()
+    if (data) { prof = data; renderDash(); ir('s-dash'); return }
+  }
+  ir('s-login')
+}
+
+function ir(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'))
+  document.getElementById(id).classList.add('active')
+  window.scrollTo(0,0)
+}
+
+function aba(id) {
+  document.querySelectorAll('.tc').forEach(t => t.style.display = 'none')
+  document.querySelectorAll('.ni').forEach(n => n.classList.remove('on'))
+  document.getElementById('tc-' + id).style.display = 'block'
+  const ni = document.getElementById('ni-' + id)
+  if (ni) ni.classList.add('on')
+  ir('s-dash')
+  if (id === 'turmas') carregarTurmas()
+}
+
+function renderDash() {
+  if (!prof) return
+  const nome = prof.nome || 'Professor'
+  set('d-nome', nome); set('d-av', nome[0].toUpperCase())
+  set('p-av', nome[0].toUpperCase()); set('p-nome', nome)
+  set('p-role', prof.role === 'admin' ? 'Administrador' : 'Prof. de Educação Física')
+  set('p-email', prof.email || '–')
+  set('p-escola', prof.escola?.nome || '–')
+  const nt = prof.turmas?.length || 0
+  set('m-t', nt); set('p-turmas', nt + ' turma(s)')
+  if (nt > 0) carregarNAlunos(); else set('m-a', '0')
+}
+
+async function carregarNAlunos() {
+  const ids = (prof.turmas || []).map(t => t.id)
+  if (!ids.length) { set('m-a','0'); return }
+  const { count } = await sb.from('alunos').select('id',{count:'exact',head:true}).in('turma_id', ids)
+  set('m-a', count || 0)
+}
+
+function formatarCodigo(el) {
+  let val = el.value.replace(/[^a-zA-Z0-9]/g,'').toUpperCase().slice(0,8)
+  if (val.length > 4) val = val.slice(0,4) + '–' + val.slice(4)
+  el.value = val
+  const wrap = document.getElementById('code-wrap')
+  const ok = getCodigo().length === 8
+  wrap.style.borderColor = ok ? 'var(--blue)' : 'var(--border)'
+  document.getElementById('btn-code').disabled = !ok
+  document.getElementById('err-code').classList.remove('show')
+}
+
+function getCodigo() {
+  return (document.getElementById('codigo-input').value||'').replace(/[^a-zA-Z0-9]/g,'').toUpperCase()
+}
+
+async function submitCodigo() {
+  const cod = getCodigo()
+  if (cod.length < 8) return
+  setBtnLoad('btn-code','A verificar...')
+  showErr('err-code','')
+  try {
+    const { data: cd, error: ce } = await sb.from('codigos_acesso')
+      .select('professor_id').eq('codigo', cod).eq('utilizado', false)
+      .gt('expira_em', new Date().toISOString()).maybeSingle()
+    if (ce) throw new Error('Erro de ligação')
+    if (!cd) throw new Error('Código inválido ou expirado')
+    const { data: pd } = await sb.from('professores')
+      .select('*, escola:escolas(nome), turmas(id)').eq('id', cd.professor_id).maybeSingle()
+    if (!pd) throw new Error('Professor não encontrado')
+    await sb.from('codigos_acesso').update({utilizado:true, utilizado_em:new Date().toISOString()}).eq('codigo',cod)
+    localStorage.setItem('sp_prof_id', pd.id)
+    prof = pd; renderDash(); ir('s-dash')
+  } catch(e) {
+    showErr('err-code', e.message)
+    document.getElementById('code-wrap').classList.add('bad')
+    setTimeout(()=>document.getElementById('code-wrap').classList.remove('bad'),1400)
+  } finally { resetBtn('btn-code','Continuar →') }
+}
+
+function chkEmail() {}
+async function submitEmail() {}
+
+async function carregarTurmas() {
+  if (!prof) return
+  const el = document.getElementById('lista-turmas')
+  el.innerHTML = '<div class="spinner" style="margin-top:40px"></div>'
+  const { data } = await sb.from('turmas').select('*, al:alunos(count)').eq('professor_id', prof.id).order('nome')
+  if (!data || !data.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-ico">👥</div><p class="empty-title">Sem turmas ainda</p><p class="empty-sub">Toca no + para criar a primeira turma</p></div>`
+    return
+  }
+  el.innerHTML = data.map(t => `
+    <div class="li" onclick="verAlunos('${t.id}','${t.nome}','${t.ciclo||''}')">
+      <div class="li-ico">${t.nome[0] === '5' || t.nome[0] === '6' ? '🔵' : t.nome[0] === '7' || t.nome[0] === '8' || t.nome[0] === '9' ? '🟣' : '🟠'}</div>
+      <div class="li-info">
+        <div class="li-name">${t.nome}</div>
+        <div class="li-sub">${t.ciclo||''} · ${t.al?.[0]?.count??0} alunos</div>
+      </div>
+      <span class="li-arr">›</span>
+    </div>`).join('')
+}
+
+async function criarTurma() {
+  const nome = document.getElementById('nt-nome').value.trim()
+  const ciclo = document.getElementById('nt-ciclo').value
+  if (!nome || !ciclo) { showErr('err-nt','Preenche o nome e o ciclo'); return }
+  try {
+    const { error } = await sb.from('turmas').insert({nome, ciclo, professor_id:prof.id, escola_id:prof.escola_id, ano_letivo:'2025/2026'})
+    if (error) throw error
+    fecharModal('modal-turma')
+    document.getElementById('nt-nome').value = ''
+    document.getElementById('nt-ciclo').value = ''
+    showErr('err-nt','')
+    await carregarTurmas()
+    const { data: td } = await sb.from('turmas').select('id').eq('professor_id', prof.id)
+    prof.turmas = td || []; renderDash()
+  } catch(e) { showErr('err-nt','Erro ao criar turma: ' + e.message) }
+}
+
+function verAlunos(id, nome, ciclo) {
+  turmaAtiva = {id, nome, ciclo}
+  set('titulo-turma', nome); set('sub-turma', ciclo)
+  set('modal-aluno-sub', 'Adicionar aluno à turma ' + nome)
+  document.querySelectorAll('.tc').forEach(t => t.style.display = 'none')
+  document.getElementById('tc-alunos').style.display = 'block'
+  carregarAlunos()
+}
+
+async function carregarAlunos() {
+  if (!turmaAtiva) return
+  const el = document.getElementById('lista-alunos')
+  el.innerHTML = '<div class="spinner" style="margin-top:40px"></div>'
+  const { data } = await sb.from('alunos').select('*').eq('turma_id', turmaAtiva.id).order('numero_aluno', {ascending:true})
+  if (!data || !data.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-ico">🧑‍🎓</div><p class="empty-title">Sem alunos ainda</p><p class="empty-sub">Toca no + para adicionar o primeiro aluno</p></div>`
+    return
+  }
+  el.innerHTML = data.map(a => `
+    <div class="li">
+      <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,var(--blue),var(--purple));display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#fff;flex-shrink:0">${a.nome[0]}${a.apelido[0]}</div>
+      <div class="li-info">
+        <div class="li-name">${a.nome} ${a.apelido}</div>
+        <div class="li-sub">N.º ${a.numero_aluno||'–'} · ${a.genero||'–'}</div>
+      </div>
+      ${a.necessidades_especiais ? '<span class="badge b-amber">NEE</span>' : ''}
+    </div>`).join('')
+}
+
+async function criarAluno() {
+  const nome = document.getElementById('al-nome').value.trim()
+  const apelido = document.getElementById('al-apelido').value.trim()
+  if (!nome || !apelido) { showErr('err-al','Nome e apelido são obrigatórios'); return }
+  try {
+    const { error } = await sb.from('alunos').insert({
+      nome, apelido,
+      numero_aluno: parseInt(document.getElementById('al-num').value)||null,
+      genero: document.getElementById('al-gen').value||null,
+      data_nascimento: document.getElementById('al-nasc').value||null,
+      turma_id: turmaAtiva.id, escola_id: prof.escola_id
+    })
+    if (error) throw error
+    fecharModal('modal-aluno')
+    ;['al-nome','al-apelido','al-num','al-nasc'].forEach(id => document.getElementById(id).value='')
+    document.getElementById('al-gen').value=''
+    showErr('err-al','')
+    carregarAlunos(); carregarNAlunos()
+  } catch(e) { showErr('err-al','Erro: ' + e.message) }
+}
+
+function modo() {}
+
+function logout() { localStorage.removeItem('sp_prof_id'); prof=null; ir('s-login') }
+function toggleVer(inp, btn) { const el=document.getElementById(inp); el.type=el.type==='password'?'text':'password'; document.getElementById(btn).textContent=el.type==='password'?'👁️':'🙈' }
+function set(id, val) { const el=document.getElementById(id); if(el) el.textContent=val }
+function showErr(id, msg) { const el=document.getElementById(id); if(!el)return; el.textContent=msg; el.classList.toggle('show',!!msg) }
+function setBtnLoad(id, txt) { const b=document.getElementById(id); if(!b)return; b.disabled=true; b.textContent=txt }
+function resetBtn(id, txt) { const b=document.getElementById(id); if(!b)return; b.disabled=false; b.textContent=txt }
+function abrirModal(id) { document.getElementById(id).classList.add('open') }
+function fecharModal(id) { document.getElementById(id).classList.remove('open') }
+function fecharFora(e,id) { if(e.target.id===id) fecharModal(id) }
+
+init()
+</script>
+</body>
+</html>
