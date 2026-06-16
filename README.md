@@ -1,2 +1,2 @@
-# apoios-associativismo
-Sistema de gestão de apoios a associações
+# Class
+Sistema de gestão de apoios as turmas
