@@ -1,0 +1,1659 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>GestPro — Gestão de Processos | Município de Cabeceiras de Basto</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --azul:#0f3d7a;
+  --azul-esc:#0a2b57;
+  --azul-2:#155097;
+  --azul-suave:#e8eef8;
+  --tinta:#101c33;
+  --texto:#3a4557;
+  --papel:#f2f5fa;
+  --branco:#ffffff;
+  --linha:#dee5f0;
+  --verde:#1c8a55;
+  --verde-bg:#e4f3ec;
+  --ambar:#b0730f;
+  --ambar-bg:#fbf0dc;
+  --verm:#c22f2f;
+  --verm-bg:#fbe7e7;
+  --cinza:#7d879a;
+  --cinza-bg:#eef1f6;
+  --raio:10px;
+  --sombra:0 1px 3px rgba(16,28,51,.08),0 4px 14px rgba(16,28,51,.06);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{font-size:16px}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--papel);color:var(--tinta);line-height:1.5;min-height:100vh}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+input,select,textarea{font-family:inherit;font-size:1rem}
+h1,h2,h3,.disp{font-family:'Space Grotesk',sans-serif}
+
+/* ---------- LOGIN ---------- */
+#loginView{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;
+  background:linear-gradient(160deg,var(--azul-esc) 0%,var(--azul) 55%,#1a5aa8 100%)}
+.login-card{background:var(--branco);border-radius:16px;padding:40px 36px;width:100%;max-width:400px;box-shadow:0 20px 60px rgba(4,15,35,.45)}
+.login-marca{margin-bottom:28px}
+.login-marca .disp{font-size:2rem;font-weight:700;color:var(--azul);letter-spacing:-.02em}
+.login-marca .disp span{color:var(--ambar)}
+.login-marca p{font-size:.82rem;color:var(--cinza);margin-top:2px}
+.login-marca .mun{display:inline-block;margin-top:12px;font-size:.72rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--azul);background:var(--azul-suave);padding:4px 10px;border-radius:99px}
+.campo{margin-bottom:16px}
+.campo label{display:block;font-size:.78rem;font-weight:600;color:var(--texto);margin-bottom:6px;letter-spacing:.02em}
+.campo input,.campo select,.campo textarea{width:100%;padding:11px 13px;border:1.5px solid var(--linha);border-radius:8px;background:var(--branco);color:var(--tinta);transition:border-color .15s}
+.campo input:focus,.campo select:focus,.campo textarea:focus{outline:none;border-color:var(--azul)}
+.campo textarea{resize:vertical;min-height:70px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 18px;border-radius:8px;font-weight:600;font-size:.92rem;transition:background .15s,transform .05s}
+.btn:active{transform:scale(.98)}
+.btn-primario{background:var(--azul);color:#fff;width:auto}
+.btn-primario:hover{background:var(--azul-2)}
+.btn-bloco{width:100%}
+.btn-fantasma{background:var(--branco);color:var(--azul);border:1.5px solid var(--linha)}
+.btn-fantasma:hover{border-color:var(--azul)}
+.btn-perigo{background:var(--verm);color:#fff}
+.btn-suave{background:var(--azul-suave);color:var(--azul)}
+.btn-suave:hover{background:#d9e5f5}
+.btn-mini{padding:6px 12px;font-size:.8rem;border-radius:7px}
+.login-erro{color:var(--verm);font-size:.85rem;margin-top:12px;text-align:center;display:none}
+
+/* ---------- CABEÇALHO ---------- */
+header{background:var(--azul-esc);color:#fff;position:sticky;top:0;z-index:50}
+.head-linha{max-width:1180px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;gap:14px}
+.head-linha .disp{font-size:1.35rem;font-weight:700;letter-spacing:-.02em}
+.head-linha .disp span{color:#f0b53f}
+.head-sub{font-size:.7rem;opacity:.75;line-height:1.2}
+.head-esp{flex:1}
+.head-user{font-size:.8rem;opacity:.9;text-align:right;line-height:1.25}
+.head-user b{display:block;font-weight:600}
+#btnSair{color:#fff;background:rgba(255,255,255,.12);padding:8px 14px;border-radius:8px;font-size:.82rem;font-weight:600}
+#btnSair:hover{background:rgba(255,255,255,.22)}
+
+/* faixa próxima reunião — assinatura visual */
+.faixa-reuniao{background:var(--azul);color:#fff}
+.faixa-inner{max-width:1180px;margin:0 auto;padding:10px 20px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;font-size:.85rem}
+.faixa-inner .fr-titulo{font-family:'Space Grotesk';font-weight:600;letter-spacing:.06em;text-transform:uppercase;font-size:.72rem;opacity:.8}
+.faixa-inner .fr-data{font-family:'Space Grotesk';font-weight:700;font-size:1rem}
+.fr-pill{background:rgba(255,255,255,.14);border-radius:99px;padding:3px 12px;font-size:.78rem;font-weight:600}
+.fr-pill.alerta{background:#e8552f;color:#fff}
+
+/* ---------- NAV ---------- */
+nav{background:var(--branco);border-bottom:1px solid var(--linha);position:sticky;top:0;z-index:40}
+.nav-inner{max-width:1180px;margin:0 auto;display:flex;overflow-x:auto;scrollbar-width:none}
+.nav-inner::-webkit-scrollbar{display:none}
+.tab{padding:13px 18px;font-size:.88rem;font-weight:600;color:var(--cinza);border-bottom:3px solid transparent;white-space:nowrap}
+.tab.ativo{color:var(--azul);border-bottom-color:var(--azul)}
+.tab:hover{color:var(--azul)}
+
+/* ---------- LAYOUT ---------- */
+main{max-width:1180px;margin:0 auto;padding:22px 20px 90px}
+.seccao{display:none}
+.seccao.ativa{display:block;animation:surge .18s ease}
+@keyframes surge{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.topo-seccao{display:flex;align-items:center;gap:12px;margin-bottom:18px;flex-wrap:wrap}
+.topo-seccao h2{font-size:1.3rem;font-weight:700;letter-spacing:-.01em}
+.topo-seccao .esp{flex:1}
+.cartao{background:var(--branco);border:1px solid var(--linha);border-radius:var(--raio);box-shadow:var(--sombra)}
+.cartao-pad{padding:18px 20px}
+.grelha-dash{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+
+/* ---------- PROCESSOS ---------- */
+.proc-lista{display:flex;flex-direction:column;gap:10px}
+.proc-card{display:flex;background:var(--branco);border:1px solid var(--linha);border-radius:var(--raio);overflow:hidden;box-shadow:var(--sombra);cursor:pointer;transition:border-color .15s}
+.proc-card:hover{border-color:var(--azul)}
+.proc-rail{width:6px;flex-shrink:0}
+.rail-verde{background:var(--verde)}
+.rail-ambar{background:var(--ambar)}
+.rail-verm{background:var(--verm)}
+.rail-cinza{background:#c6cdd9}
+.proc-body{flex:1;padding:13px 16px;min-width:0}
+.proc-l1{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.proc-num{font-family:'Space Grotesk';font-weight:700;font-size:1rem;color:var(--azul);letter-spacing:.01em}
+.proc-assunto{font-size:.92rem;font-weight:500;margin-top:2px;color:var(--tinta)}
+.proc-meta{font-size:.8rem;color:var(--cinza);margin-top:4px;display:flex;gap:14px;flex-wrap:wrap}
+.proc-sit{font-size:.83rem;color:var(--texto);margin-top:6px;display:flex;align-items:center;gap:6px}
+.proc-sit b{font-weight:600}
+.pill{display:inline-flex;align-items:center;gap:5px;border-radius:99px;padding:2px 10px;font-size:.72rem;font-weight:600;letter-spacing:.02em;white-space:nowrap}
+.pill-trami{background:var(--azul-suave);color:var(--azul)}
+.pill-pronto{background:var(--verde-bg);color:var(--verde)}
+.pill-delib{background:var(--ambar-bg);color:var(--ambar)}
+.pill-info{background:#ece4f7;color:#6b3fa0}
+.pill-concl{background:var(--cinza-bg);color:var(--cinza)}
+.pill-dias{background:var(--cinza-bg);color:var(--cinza)}
+.pill-dias.alerta{background:var(--verm-bg);color:var(--verm)}
+.pill-dias.aviso{background:var(--ambar-bg);color:var(--ambar)}
+
+/* ---------- FILTROS ---------- */
+.filtros{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.filtros input[type=search]{flex:1;min-width:180px;padding:10px 14px;border:1.5px solid var(--linha);border-radius:8px}
+.filtros input[type=search]:focus{outline:none;border-color:var(--azul)}
+.filtros select{padding:10px 12px;border:1.5px solid var(--linha);border-radius:8px;background:var(--branco)}
+.chip-linha{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.chip{padding:6px 14px;border-radius:99px;font-size:.8rem;font-weight:600;background:var(--branco);border:1.5px solid var(--linha);color:var(--texto)}
+.chip.ativo{background:var(--azul);border-color:var(--azul);color:#fff}
+
+/* ---------- DASHBOARD ---------- */
+.bloco-dash h3{font-size:.78rem;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--cinza);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.bloco-dash h3 .cont{background:var(--azul-suave);color:var(--azul);border-radius:99px;padding:1px 9px;font-size:.72rem}
+.vazio{color:var(--cinza);font-size:.85rem;padding:14px;text-align:center;background:var(--cinza-bg);border-radius:8px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px}
+.kpi{background:var(--branco);border:1px solid var(--linha);border-radius:var(--raio);padding:14px 16px;box-shadow:var(--sombra)}
+.kpi .num{font-family:'Space Grotesk';font-size:1.7rem;font-weight:700;color:var(--azul);line-height:1.1}
+.kpi .lbl{font-size:.72rem;font-weight:600;color:var(--cinza);letter-spacing:.04em;text-transform:uppercase;margin-top:3px}
+.kpi.k-verm .num{color:var(--verm)}
+.kpi.k-ambar .num{color:var(--ambar)}
+.kpi.k-verde .num{color:var(--verde)}
+
+/* ---------- REUNIÕES ---------- */
+.reu-card{display:flex;align-items:center;gap:16px;padding:14px 18px}
+.reu-data{font-family:'Space Grotesk';font-weight:700;font-size:1.05rem;color:var(--azul);min-width:110px}
+.reu-info{flex:1;font-size:.82rem;color:var(--cinza)}
+.reu-info b{color:var(--tinta)}
+
+/* ---------- RONDA ---------- */
+.ronda-grupo{margin-bottom:20px}
+.ronda-grupo h4{font-family:'Space Grotesk';font-size:.95rem;font-weight:600;color:var(--azul);padding-bottom:6px;border-bottom:2px solid var(--azul-suave);margin-bottom:10px}
+
+/* ---------- MODAIS ---------- */
+.modal-fundo{display:none;position:fixed;inset:0;background:rgba(10,20,40,.55);z-index:100;align-items:flex-end;justify-content:center;padding:0}
+.modal-fundo.aberto{display:flex}
+.modal{background:var(--branco);width:100%;max-width:560px;max-height:92vh;overflow-y:auto;border-radius:16px 16px 0 0;padding:22px 22px 30px;animation:sobe .2s ease}
+@media(min-width:640px){.modal-fundo{align-items:center;padding:24px}.modal{border-radius:16px;padding:26px}}
+@keyframes sobe{from{transform:translateY(30px);opacity:0}to{transform:none;opacity:1}}
+.modal-topo{display:flex;align-items:flex-start;gap:12px;margin-bottom:18px}
+.modal-topo h3{font-size:1.1rem;font-weight:700;flex:1}
+.modal-fechar{font-size:1.5rem;color:var(--cinza);line-height:1;padding:2px 8px}
+.modal-accoes{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+.modal-accoes .btn{flex:1;min-width:120px}
+.linha2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:480px){.linha2{grid-template-columns:1fr}}
+
+/* atualização rápida */
+.qa-cabeca{background:var(--azul-suave);border-radius:10px;padding:12px 14px;margin-bottom:16px}
+.qa-cabeca .proc-num{font-size:1.05rem}
+.qa-cabeca p{font-size:.85rem;color:var(--texto);margin-top:2px}
+.fase-botoes{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.fase-btn{padding:8px 14px;border-radius:99px;font-size:.82rem;font-weight:600;border:1.5px solid var(--linha);background:var(--branco);color:var(--texto)}
+.fase-btn.sel{background:var(--azul);border-color:var(--azul);color:#fff}
+.sug-lista{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.sug{padding:7px 13px;border-radius:8px;font-size:.82rem;background:var(--cinza-bg);color:var(--texto);border:1px solid transparent}
+.sug:hover{border-color:var(--azul);color:var(--azul)}
+
+/* ---------- TIMELINE (ficha) ---------- */
+.timeline{position:relative;margin:14px 0 4px;padding-left:26px}
+.timeline::before{content:'';position:absolute;left:8px;top:6px;bottom:6px;width:2px;background:var(--linha)}
+.tl-item{position:relative;padding-bottom:18px}
+.tl-item:last-child{padding-bottom:0}
+.tl-ponto{position:absolute;left:-24px;top:4px;width:12px;height:12px;border-radius:50%;background:var(--branco);border:3px solid var(--azul)}
+.tl-item:first-child .tl-ponto{background:var(--azul)}
+.tl-data{font-size:.72rem;font-weight:600;color:var(--cinza);letter-spacing:.03em;text-transform:uppercase}
+.tl-corpo{font-size:.88rem;margin-top:2px}
+.tl-corpo b{font-weight:600}
+.tl-nota{font-size:.82rem;color:var(--texto);margin-top:2px;font-style:italic}
+
+/* ---------- TOAST / CONFIRM ---------- */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--tinta);color:#fff;padding:12px 22px;border-radius:99px;font-size:.88rem;font-weight:500;z-index:200;opacity:0;transition:all .25s;box-shadow:0 8px 30px rgba(0,0,0,.3);max-width:90vw;text-align:center}
+#toast.mostra{transform:translateX(-50%) translateY(0);opacity:1}
+.tabela{width:100%;border-collapse:collapse;font-size:.88rem}
+.tabela th{text-align:left;font-size:.72rem;letter-spacing:.05em;text-transform:uppercase;color:var(--cinza);padding:8px 10px;border-bottom:2px solid var(--linha)}
+.tabela td{padding:10px;border-bottom:1px solid var(--linha)}
+.accoes-linha{display:flex;gap:6px;justify-content:flex-end}
+
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+@media(max-width:640px){
+  html{font-size:15px}
+  .head-sub{display:none}
+  main{padding:16px 14px 80px}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ LOGIN ============ -->
+<div id="loginView">
+  <div class="login-card">
+    <div class="login-marca">
+      <div class="disp">Gest<span>Pro</span></div>
+      <p>Gestão de processos para reunião de câmara</p>
+      <span class="mun">Município de Cabeceiras de Basto</span>
+    </div>
+    <div class="campo">
+      <label for="loginUser">Utilizador</label>
+      <input type="text" id="loginUser" autocomplete="username" autocapitalize="none">
+    </div>
+    <div class="campo">
+      <label for="loginPass">Palavra-passe</label>
+      <input type="password" id="loginPass" autocomplete="current-password">
+    </div>
+    <button class="btn btn-primario btn-bloco" id="btnEntrar">Entrar</button>
+    <p class="login-erro" id="loginErro">Credenciais incorretas. Tente novamente.</p>
+  </div>
+</div>
+
+<!-- ============ APP ============ -->
+<div id="appView" style="display:none">
+  <header>
+    <div class="head-linha">
+      <div>
+        <div class="disp">Gest<span>Pro</span></div>
+        <div class="head-sub">Município de Cabeceiras de Basto</div>
+      </div>
+      <div class="head-esp"></div>
+      <div class="head-user"><b id="headNome"></b><span id="headPapel"></span></div>
+      <button id="btnSair">Sair</button>
+    </div>
+    <div class="faixa-reuniao">
+      <div class="faixa-inner" id="faixaReuniao"></div>
+    </div>
+  </header>
+
+  <nav>
+    <div class="nav-inner" id="navTabs">
+      <button class="tab ativo" data-sec="dashboard">Dashboard</button>
+      <button class="tab" data-sec="processos">Processos</button>
+      <button class="tab" data-sec="reunioes">Reuniões</button>
+      <button class="tab" data-sec="ronda">Ronda</button>
+      <button class="tab" data-sec="relatorios">Relatórios</button>
+      <button class="tab" data-sec="arquivo">Arquivo</button>
+      <button class="tab" data-sec="admin" id="tabAdmin" style="display:none">Utilizadores</button>
+    </div>
+  </nav>
+
+  <main>
+    <!-- DASHBOARD -->
+    <section class="seccao ativa" id="sec-dashboard">
+      <div class="kpis" id="kpis"></div>
+      <div class="grelha-dash">
+        <div class="cartao cartao-pad bloco-dash">
+          <h3>Próxima reunião <span class="cont" id="contProxima">0</span></h3>
+          <div id="dashProxima"></div>
+        </div>
+        <div class="cartao cartao-pad bloco-dash">
+          <h3>Em tramitação <span class="cont" id="contTrami">0</span></h3>
+          <div id="dashTrami"></div>
+        </div>
+        <div class="cartao cartao-pad bloco-dash">
+          <h3>Pós-reunião <span class="cont" id="contPos">0</span></h3>
+          <div id="dashPos"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROCESSOS -->
+    <section class="seccao" id="sec-processos">
+      <div class="topo-seccao">
+        <h2>Processos</h2>
+        <div class="esp"></div>
+        <button class="btn btn-primario" id="btnNovoProc">+ Novo processo</button>
+      </div>
+      <div class="filtros">
+        <input type="search" id="pesqProc" placeholder="Pesquisar por n.º, requerente ou assunto…">
+        <select id="filtroReuniao"><option value="">Todas as reuniões</option></select>
+      </div>
+      <div class="chip-linha" id="chipsFase"></div>
+      <div class="proc-lista" id="listaProcessos"></div>
+    </section>
+
+    <!-- REUNIÕES -->
+    <section class="seccao" id="sec-reunioes">
+      <div class="topo-seccao">
+        <h2>Reuniões de câmara</h2>
+        <div class="esp"></div>
+        <button class="btn btn-primario" id="btnNovaReuniao">+ Nova reunião</button>
+      </div>
+      <div class="proc-lista" id="listaReunioes"></div>
+    </section>
+
+    <!-- RONDA -->
+    <section class="seccao" id="sec-ronda">
+      <div class="topo-seccao">
+        <h2>Ronda de verificação</h2>
+        <div class="esp"></div>
+        <select id="rondaDias">
+          <option value="3">Sem atualização há 3+ dias</option>
+          <option value="5" selected>Sem atualização há 5+ dias</option>
+          <option value="7">Sem atualização há 7+ dias</option>
+          <option value="0">Todos em tramitação</option>
+        </select>
+      </div>
+      <p style="font-size:.85rem;color:var(--cinza);margin-bottom:16px">Processos em tramitação agrupados pelo serviço onde se encontram. Após verificar, confirme sem alteração ou toque no processo para atualizar.</p>
+      <div id="listaRonda"></div>
+    </section>
+
+    <!-- RELATÓRIOS -->
+    <section class="seccao" id="sec-relatorios">
+      <div class="topo-seccao"><h2>Relatórios</h2></div>
+      <div class="grelha-dash">
+        <div class="cartao cartao-pad bloco-dash">
+          <h3>Ponto de situação global</h3>
+          <p style="font-size:.85rem;color:var(--texto);margin-bottom:14px">Informação formal com todos os processos ativos, agrupados por fase, com situação atual e dias sem atualização. Ideal para envio periódico ao superior hierárquico.</p>
+          <label style="display:flex;align-items:center;gap:8px;font-size:.85rem;margin-bottom:14px">
+            <input type="checkbox" id="relIncConcluidos"> Incluir processos concluídos
+          </label>
+          <button class="btn btn-primario btn-bloco" id="btnRelSituacao">Gerar relatório (PDF / Imprimir)</button>
+        </div>
+        <div class="cartao cartao-pad bloco-dash">
+          <h3>Relatório de reunião</h3>
+          <p style="font-size:.85rem;color:var(--texto);margin-bottom:14px">Lista dos processos associados a uma reunião de câmara, com fase e situação de cada um.</p>
+          <div class="campo">
+            <label for="relReuniao">Reunião</label>
+            <select id="relReuniao"></select>
+          </div>
+          <button class="btn btn-primario btn-bloco" id="btnRelReuniao">Gerar relatório (PDF / Imprimir)</button>
+        </div>
+        <div class="cartao cartao-pad bloco-dash">
+          <h3>Exportação Excel</h3>
+          <p style="font-size:.85rem;color:var(--texto);margin-bottom:14px">Ficheiro Excel com todos os processos (incluindo concluídos) e respetivos dados, para tratamento ou arquivo.</p>
+          <button class="btn btn-primario btn-bloco" id="btnRelExcel">Descarregar Excel (.xlsx)</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ARQUIVO -->
+    <section class="seccao" id="sec-arquivo">
+      <div class="topo-seccao"><h2>Arquivo — Concluídos</h2></div>
+      <div class="filtros">
+        <input type="search" id="pesqArquivo" placeholder="Pesquisar no arquivo…">
+      </div>
+      <div class="proc-lista" id="listaArquivo"></div>
+    </section>
+
+    <!-- ADMIN -->
+    <section class="seccao" id="sec-admin">
+      <div class="topo-seccao">
+        <h2>Utilizadores</h2>
+        <div class="esp"></div>
+        <button class="btn btn-primario" id="btnNovoUser">+ Novo utilizador</button>
+      </div>
+      <div class="cartao" style="overflow-x:auto">
+        <table class="tabela" id="tabelaUsers">
+          <thead><tr><th>Nome</th><th>Utilizador</th><th>Perfil</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- ============ MODAL: ATUALIZAÇÃO RÁPIDA ============ -->
+<div class="modal-fundo" id="mQuick">
+  <div class="modal">
+    <div class="modal-topo">
+      <h3>Atualizar processo</h3>
+      <button class="modal-fechar" data-fecha="mQuick">&times;</button>
+    </div>
+    <div class="qa-cabeca">
+      <div class="proc-num" id="qaNum"></div>
+      <p id="qaInfo"></p>
+      <p id="qaAtual" style="margin-top:6px;font-weight:600;color:var(--azul)"></p>
+    </div>
+    <label style="font-size:.78rem;font-weight:600;color:var(--texto)">Fase</label>
+    <div class="fase-botoes" id="qaFases"></div>
+    <div id="qaSitBloco">
+      <label style="font-size:.78rem;font-weight:600;color:var(--texto)">Serviço — onde está</label>
+      <div class="fase-botoes" id="qaServicos" style="margin-top:6px"></div>
+      <div class="campo" id="qaServOutroBloco" style="display:none">
+        <input type="text" id="qaServOutro" placeholder="Escrever o serviço…" autocomplete="off">
+      </div>
+      <label style="font-size:.78rem;font-weight:600;color:var(--texto)">Para quê</label>
+      <div class="fase-botoes" id="qaTarefas" style="margin-top:6px"></div>
+      <div class="campo">
+        <input type="text" id="qaTarefa" placeholder="Ou escrever a tarefa…" autocomplete="off">
+      </div>
+    </div>
+    <div class="linha2">
+      <div class="campo">
+        <label for="qaData">Data do movimento</label>
+        <input type="date" id="qaData">
+      </div>
+      <div class="campo">
+        <label for="qaNota">Nota (opcional)</label>
+        <input type="text" id="qaNota" placeholder="Observação para o histórico">
+      </div>
+    </div>
+    <div class="modal-accoes">
+      <button class="btn btn-fantasma" id="qaFicha">Ver ficha</button>
+      <button class="btn btn-suave" id="qaAdiar">Adiar reunião</button>
+      <button class="btn btn-fantasma" id="qaEditar">Editar dados</button>
+      <button class="btn btn-primario" id="qaGuardar">Guardar atualização</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: FICHA / TIMELINE ============ -->
+<div class="modal-fundo" id="mFicha">
+  <div class="modal">
+    <div class="modal-topo">
+      <h3 id="fichaTitulo">Ficha do processo</h3>
+      <button class="modal-fechar" data-fecha="mFicha">&times;</button>
+    </div>
+    <div id="fichaCabeca"></div>
+    <div class="timeline" id="fichaTimeline"></div>
+  </div>
+</div>
+
+<!-- ============ MODAL: PROCESSO (novo/editar) ============ -->
+<div class="modal-fundo" id="mProc">
+  <div class="modal">
+    <div class="modal-topo">
+      <h3 id="mProcTitulo">Novo processo</h3>
+      <button class="modal-fechar" data-fecha="mProc">&times;</button>
+    </div>
+    <div class="linha2">
+      <div class="campo">
+        <label for="pNumero">N.º do processo</label>
+        <input type="text" id="pNumero" placeholder="1234/2026 EXT">
+      </div>
+      <div class="campo">
+        <label for="pEntrada">Data de entrada</label>
+        <input type="date" id="pEntrada">
+      </div>
+    </div>
+    <div class="campo">
+      <label for="pRequerente">Requerente</label>
+      <input type="text" id="pRequerente">
+    </div>
+    <div class="campo">
+      <label for="pAssunto">Assunto</label>
+      <textarea id="pAssunto"></textarea>
+    </div>
+    <div class="linha2">
+      <div class="campo">
+        <label for="pReuniao">Reunião alvo</label>
+        <select id="pReuniao"><option value="">— Sem reunião —</option></select>
+      </div>
+      <div class="campo" id="pFaseBloco">
+        <label for="pFase">Fase</label>
+        <select id="pFase"></select>
+      </div>
+    </div>
+    <div class="campo" id="pSitBloco">
+      <label for="pSituacao">Situação inicial</label>
+      <input type="text" id="pSituacao" placeholder="Ex.: SAU — entrada">
+    </div>
+    <div class="modal-accoes">
+      <button class="btn btn-perigo" id="pApagar" style="display:none">Apagar</button>
+      <button class="btn btn-primario" id="pGuardar">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: REUNIÃO ============ -->
+<div class="modal-fundo" id="mReuniao">
+  <div class="modal">
+    <div class="modal-topo">
+      <h3 id="mReuTitulo">Nova reunião</h3>
+      <button class="modal-fechar" data-fecha="mReuniao">&times;</button>
+    </div>
+    <div class="linha2">
+      <div class="campo">
+        <label for="rData">Data da reunião</label>
+        <input type="date" id="rData">
+      </div>
+      <div class="campo">
+        <label for="rLimite">Data limite de entrada de assuntos</label>
+        <input type="date" id="rLimite">
+      </div>
+    </div>
+    <div class="campo">
+      <label for="rNotas">Notas (opcional)</label>
+      <input type="text" id="rNotas">
+    </div>
+    <p id="rAviso" style="font-size:.8rem;color:var(--ambar);display:none">Ao alterar a data, os processos associados acompanham automaticamente a reunião.</p>
+    <div class="modal-accoes">
+      <button class="btn btn-perigo" id="rApagar" style="display:none">Apagar</button>
+      <button class="btn btn-primario" id="rGuardar">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: ADIAR ============ -->
+<div class="modal-fundo" id="mAdiar">
+  <div class="modal">
+    <div class="modal-topo">
+      <h3>Adiar para outra reunião</h3>
+      <button class="modal-fechar" data-fecha="mAdiar">&times;</button>
+    </div>
+    <div class="campo">
+      <label for="adReuniao">Nova reunião alvo</label>
+      <select id="adReuniao"></select>
+    </div>
+    <div class="modal-accoes">
+      <button class="btn btn-primario" id="adConfirmar">Confirmar adiamento</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: UTILIZADOR ============ -->
+<div class="modal-fundo" id="mUser">
+  <div class="modal">
+    <div class="modal-topo">
+      <h3 id="mUserTitulo">Novo utilizador</h3>
+      <button class="modal-fechar" data-fecha="mUser">&times;</button>
+    </div>
+    <div class="campo"><label for="uNome">Nome</label><input type="text" id="uNome"></div>
+    <div class="linha2">
+      <div class="campo"><label for="uUsername">Utilizador</label><input type="text" id="uUsername" autocapitalize="none"></div>
+      <div class="campo"><label for="uPassword">Palavra-passe</label><input type="text" id="uPassword"></div>
+    </div>
+    <div class="campo">
+      <label for="uPapel">Perfil</label>
+      <select id="uPapel"><option value="gestor">Gestor</option><option value="admin">Administrador</option></select>
+    </div>
+    <div class="modal-accoes">
+      <button class="btn btn-perigo" id="uApagar" style="display:none">Apagar</button>
+      <button class="btn btn-primario" id="uGuardar">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: CONFIRMAÇÃO ============ -->
+<div class="modal-fundo" id="mConfirm">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-topo"><h3 id="confTitulo">Confirmar</h3></div>
+    <p id="confTexto" style="font-size:.92rem;color:var(--texto)"></p>
+    <div class="modal-accoes">
+      <button class="btn btn-fantasma" id="confNao">Cancelar</button>
+      <button class="btn btn-perigo" id="confSim">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<script>
+/* ============================================================
+   GestPro — V1.0
+   Configuração: colocar aqui o URL e a anon key do projeto
+   Supabase criado para o GestPro (ver setup_supabase.sql)
+   ============================================================ */
+const SUPABASE_URL = 'https://xznnstmlbtdwojpzxihv.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh6bm5zdG1sYnRkd29qcHp4aWh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxMzE0MTcsImV4cCI6MjA5OTcwNzQxN30.r1I5ar9mwC_sWtWWP4p_mi0dYsUSmtY8D_4eAzrQ2Jw';
+
+const FASES = ['Em tramitação','Pronto para reunião','Deliberado','Informado','Concluído'];
+const PILL_FASE = {
+  'Em tramitação':'pill-trami',
+  'Pronto para reunião':'pill-pronto',
+  'Deliberado':'pill-delib',
+  'Informado':'pill-info',
+  'Concluído':'pill-concl'
+};
+
+/* ---------- Estado ---------- */
+let sessao = null;
+let reunioes = [];
+let processos = [];
+let situacoes = [];
+let utilizadores = [];
+let procAtual = null;      // processo aberto na atualização rápida
+let userAtual = null;      // utilizador em edição
+let reuAtual = null;       // reunião em edição
+let filtroFase = '';       // chip de fase ativo na lista de processos
+
+/* ---------- Helpers REST (Supabase) ---------- */
+function sbHeaders(extra){
+  return Object.assign({
+    'apikey': SUPABASE_KEY,
+    'Authorization': 'Bearer ' + SUPABASE_KEY,
+    'Content-Type': 'application/json'
+  }, extra || {});
+}
+async function sbGet(pathQuery){
+  const r = await fetch(SUPABASE_URL + '/rest/v1/' + pathQuery, { headers: sbHeaders() });
+  if(!r.ok) throw new Error('GET ' + pathQuery + ' → ' + r.status);
+  return r.json();
+}
+async function sbPost(tabela, corpo){
+  const r = await fetch(SUPABASE_URL + '/rest/v1/' + tabela, {
+    method:'POST',
+    headers: sbHeaders({ 'Prefer':'return=representation' }),
+    body: JSON.stringify(corpo)
+  });
+  if(!r.ok) throw new Error('POST ' + tabela + ' → ' + r.status);
+  return r.json();
+}
+async function sbPatch(tabela, filtro, corpo){
+  const r = await fetch(SUPABASE_URL + '/rest/v1/' + tabela + '?' + filtro, {
+    method:'PATCH',
+    headers: sbHeaders({ 'Prefer':'return=minimal' }),
+    body: JSON.stringify(corpo)
+  });
+  if(!r.ok) throw new Error('PATCH ' + tabela + ' → ' + r.status);
+}
+async function sbDelete(tabela, filtro){
+  const r = await fetch(SUPABASE_URL + '/rest/v1/' + tabela + '?' + filtro, {
+    method:'DELETE',
+    headers: sbHeaders({ 'Prefer':'return=minimal' })
+  });
+  if(!r.ok) throw new Error('DELETE ' + tabela + ' → ' + r.status);
+}
+
+/* ---------- Utilitários ---------- */
+const $ = id => document.getElementById(id);
+function esc(s){
+  return String(s == null ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+function fmtData(iso){
+  if(!iso) return '—';
+  const d = new Date(iso.length === 10 ? iso + 'T12:00:00' : iso);
+  return d.toLocaleDateString('pt-PT', { day:'2-digit', month:'2-digit', year:'numeric' });
+}
+function fmtDataHora(iso){
+  const d = new Date(iso);
+  return d.toLocaleDateString('pt-PT', { day:'2-digit', month:'2-digit', year:'numeric' }) +
+    ' · ' + d.toLocaleTimeString('pt-PT', { hour:'2-digit', minute:'2-digit' });
+}
+function hojeISO(){
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+function diasAte(dataISO){
+  if(!dataISO) return null;
+  const hoje = new Date(hojeISO() + 'T00:00:00');
+  const alvo = new Date(dataISO + 'T00:00:00');
+  return Math.round((alvo - hoje) / 86400000);
+}
+function diasDesde(timestamp){
+  if(!timestamp) return 0;
+  return Math.floor((Date.now() - new Date(timestamp).getTime()) / 86400000);
+}
+function toast(msg){
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.add('mostra');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('mostra'), 2600);
+}
+function abrirModal(id){ $(id).classList.add('aberto'); }
+function fecharModal(id){ $(id).classList.remove('aberto'); }
+function confirmar(titulo, texto){
+  return new Promise(resolve => {
+    $('confTitulo').textContent = titulo;
+    $('confTexto').textContent = texto;
+    abrirModal('mConfirm');
+    const sim = $('confSim'), nao = $('confNao');
+    const limpar = v => { fecharModal('mConfirm'); sim.onclick = nao.onclick = null; resolve(v); };
+    sim.onclick = () => limpar(true);
+    nao.onclick = () => limpar(false);
+  });
+}
+function reuniaoDe(id){ return reunioes.find(r => r.id === id) || null; }
+function proximaReuniao(){
+  const hoje = hojeISO();
+  return reunioes.filter(r => r.data_reuniao >= hoje)
+    .sort((a,b) => a.data_reuniao.localeCompare(b.data_reuniao))[0] || null;
+}
+function reunioesFuturas(){
+  const hoje = hojeISO();
+  return reunioes.filter(r => r.data_reuniao >= hoje)
+    .sort((a,b) => a.data_reuniao.localeCompare(b.data_reuniao));
+}
+
+/* Semáforo: cor do rail com base na fase e nos dias até à data
+   limite de entrada de assuntos da reunião alvo */
+function railProcesso(p){
+  if(p.fase === 'Concluído') return 'rail-cinza';
+  if(p.fase === 'Pronto para reunião') return 'rail-verde';
+  if(p.fase === 'Deliberado'){
+    const d = diasDesde(p.atualizado_em);
+    return d > 10 ? 'rail-verm' : (d > 5 ? 'rail-ambar' : 'rail-verde');
+  }
+  if(p.fase === 'Informado'){
+    const d = diasDesde(p.atualizado_em);
+    return d > 15 ? 'rail-ambar' : 'rail-verde';
+  }
+  // Em tramitação
+  const reu = reuniaoDe(p.reuniao_id);
+  if(!reu) return 'rail-cinza';
+  const dias = diasAte(reu.data_limite);
+  if(dias === null) return 'rail-cinza';
+  if(dias <= 2) return 'rail-verm';
+  if(dias <= 7) return 'rail-ambar';
+  return 'rail-verde';
+}
+function pillDias(p){
+  const d = diasDesde(p.atualizado_em);
+  let cls = 'pill pill-dias';
+  if(p.fase === 'Em tramitação' || p.fase === 'Deliberado'){
+    if(d >= 10) cls += ' alerta';
+    else if(d >= 5) cls += ' aviso';
+  }
+  const txt = d === 0 ? 'hoje' : (d === 1 ? '1 dia' : d + ' dias');
+  return '<span class="' + cls + '" title="Dias sem atualização">' + txt + '</span>';
+}
+function pillFase(fase){
+  return '<span class="pill ' + (PILL_FASE[fase] || 'pill-concl') + '">' + esc(fase) + '</span>';
+}
+
+/* ============================================================
+   AUTENTICAÇÃO E CARREGAMENTO
+   ============================================================ */
+async function entrar(){
+  const user = $('loginUser').value.trim();
+  const pass = $('loginPass').value;
+  if(!user || !pass) return;
+  $('loginErro').style.display = 'none';
+  try{
+    const res = await sbGet('utilizadores?username=eq.' + encodeURIComponent(user) +
+      '&password=eq.' + encodeURIComponent(pass) + '&select=*');
+    if(res.length === 0){ $('loginErro').style.display = 'block'; return; }
+    sessao = res[0];
+    localStorage.setItem('gestpro_sessao', JSON.stringify(sessao));
+    iniciarApp();
+  }catch(e){
+    console.error(e);
+    toast('Erro de ligação. Verifique a configuração do Supabase.');
+  }
+}
+function sair(){
+  localStorage.removeItem('gestpro_sessao');
+  sessao = null;
+  $('appView').style.display = 'none';
+  $('loginView').style.display = 'flex';
+  $('loginPass').value = '';
+}
+async function iniciarApp(){
+  $('loginView').style.display = 'none';
+  $('appView').style.display = 'block';
+  $('headNome').textContent = sessao.nome || sessao.username;
+  $('headPapel').textContent = sessao.papel === 'admin' ? 'Administrador' : 'Gestor';
+  $('tabAdmin').style.display = sessao.papel === 'admin' ? '' : 'none';
+  await carregarTudo();
+}
+async function carregarTudo(){
+  try{
+    const [resReunioes, resProcessos, resSituacoes] = await Promise.all([
+      sbGet('reunioes?select=*&order=data_reuniao.asc'),
+      sbGet('processos?select=*&order=atualizado_em.desc'),
+      sbGet('situacoes_sugeridas?select=*&order=usos.desc&limit=12')
+    ]);
+    reunioes = resReunioes;
+    processos = resProcessos;
+    situacoes = resSituacoes;
+    if(sessao.papel === 'admin'){
+      utilizadores = await sbGet('utilizadores?select=*&order=nome.asc');
+    }
+    renderTudo();
+  }catch(e){
+    console.error(e);
+    toast('Erro ao carregar dados.');
+  }
+}
+function renderTudo(){
+  renderFaixa();
+  renderKPIs();
+  renderDashboard();
+  renderProcessos();
+  renderReunioes();
+  renderRonda();
+  renderArquivo();
+  if(sessao.papel === 'admin') renderUsers();
+  preencherSelectReunioes();
+}
+
+/* ============================================================
+   RENDERIZAÇÃO
+   ============================================================ */
+function renderFaixa(){
+  const el = $('faixaReuniao');
+  const prox = proximaReuniao();
+  if(!prox){
+    el.innerHTML = '<span class="fr-titulo">Próxima reunião</span><span class="fr-data">Sem reunião agendada</span>';
+    return;
+  }
+  const dLim = diasAte(prox.data_limite);
+  const nProc = processos.filter(p => p.reuniao_id === prox.id && p.fase !== 'Concluído').length;
+  let pillLim;
+  if(dLim < 0) pillLim = '<span class="fr-pill alerta">Prazo de entrada terminado</span>';
+  else if(dLim === 0) pillLim = '<span class="fr-pill alerta">Entrada de assuntos termina hoje</span>';
+  else pillLim = '<span class="fr-pill' + (dLim <= 2 ? ' alerta' : '') + '">' + dLim + ' dia' + (dLim === 1 ? '' : 's') + ' até à data limite</span>';
+  el.innerHTML =
+    '<span class="fr-titulo">Próxima reunião</span>' +
+    '<span class="fr-data">' + fmtData(prox.data_reuniao) + '</span>' +
+    '<span style="opacity:.75">limite: ' + fmtData(prox.data_limite) + '</span>' +
+    pillLim +
+    '<span class="fr-pill">' + nProc + ' processo' + (nProc === 1 ? '' : 's') + '</span>';
+}
+
+function renderKPIs(){
+  const ativos = processos.filter(p => p.fase !== 'Concluído');
+  const trami = ativos.filter(p => p.fase === 'Em tramitação');
+  const porInformar = ativos.filter(p => p.fase === 'Deliberado');
+  const atrasados = ativos.filter(p => railProcesso(p) === 'rail-verm');
+  const paradas = trami.filter(p => diasDesde(p.atualizado_em) >= 5);
+  $('kpis').innerHTML =
+    kpi(ativos.length, 'Processos ativos', '') +
+    kpi(trami.length, 'Em tramitação', '') +
+    kpi(paradas.length, 'Parados 5+ dias', paradas.length ? 'k-ambar' : 'k-verde') +
+    kpi(porInformar.length, 'Por informar', porInformar.length ? 'k-ambar' : 'k-verde') +
+    kpi(atrasados.length, 'Em risco', atrasados.length ? 'k-verm' : 'k-verde');
+}
+function kpi(num, lbl, cls){
+  return '<div class="kpi ' + cls + '"><div class="num">' + num + '</div><div class="lbl">' + lbl + '</div></div>';
+}
+
+function cardProcesso(p, opts){
+  opts = opts || {};
+  const reu = reuniaoDe(p.reuniao_id);
+  const metas = [];
+  if(p.requerente) metas.push(esc(p.requerente));
+  if(reu) metas.push('Reunião ' + fmtData(reu.data_reuniao));
+  const sit = (p.fase === 'Em tramitação' && p.situacao)
+    ? '<div class="proc-sit">📍 <b>' + esc(p.situacao) + '</b></div>' : '';
+  return '<div class="proc-card" data-proc="' + p.id + '">' +
+    '<div class="proc-rail ' + railProcesso(p) + '"></div>' +
+    '<div class="proc-body">' +
+      '<div class="proc-l1"><span class="proc-num">' + esc(p.numero) + '</span>' +
+        pillFase(p.fase) + pillDias(p) + '</div>' +
+      '<div class="proc-assunto">' + esc(p.assunto || '(sem assunto)') + '</div>' +
+      (metas.length ? '<div class="proc-meta"><span>' + metas.join('</span><span>') + '</span></div>' : '') +
+      sit +
+    '</div></div>';
+}
+
+function renderDashboard(){
+  const prox = proximaReuniao();
+  // Próxima reunião
+  const daProxima = prox ? processos.filter(p => p.reuniao_id === prox.id && p.fase !== 'Concluído') : [];
+  $('contProxima').textContent = daProxima.length;
+  $('dashProxima').innerHTML = daProxima.length
+    ? '<div class="proc-lista">' + daProxima.map(p => cardProcesso(p)).join('') + '</div>'
+    : '<div class="vazio">' + (prox ? 'Sem processos para esta reunião.' : 'Sem reunião agendada. Crie uma no separador Reuniões.') + '</div>';
+  // Em tramitação
+  const trami = processos.filter(p => p.fase === 'Em tramitação')
+    .sort((a,b) => diasDesde(b.atualizado_em) - diasDesde(a.atualizado_em));
+  $('contTrami').textContent = trami.length;
+  $('dashTrami').innerHTML = trami.length
+    ? '<div class="proc-lista">' + trami.map(p => cardProcesso(p)).join('') + '</div>'
+    : '<div class="vazio">Nada em tramitação.</div>';
+  // Pós-reunião
+  const pos = processos.filter(p => p.fase === 'Deliberado' || p.fase === 'Informado')
+    .sort((a,b) => diasDesde(b.atualizado_em) - diasDesde(a.atualizado_em));
+  $('contPos').textContent = pos.length;
+  $('dashPos').innerHTML = pos.length
+    ? '<div class="proc-lista">' + pos.map(p => cardProcesso(p)).join('') + '</div>'
+    : '<div class="vazio">Sem processos pós-reunião pendentes.</div>';
+}
+
+function renderProcessos(){
+  // chips de fase
+  const chips = ['', ...FASES.filter(f => f !== 'Concluído')];
+  $('chipsFase').innerHTML = chips.map(f =>
+    '<button class="chip' + (filtroFase === f ? ' ativo' : '') + '" data-fase="' + f + '">' +
+    (f === '' ? 'Todos os ativos' : f) + '</button>').join('');
+  const termo = $('pesqProc').value.trim().toLowerCase();
+  const fReu = $('filtroReuniao').value;
+  let lista = processos.filter(p => p.fase !== 'Concluído');
+  if(filtroFase) lista = lista.filter(p => p.fase === filtroFase);
+  if(fReu) lista = lista.filter(p => p.reuniao_id === fReu);
+  if(termo) lista = lista.filter(p =>
+    (p.numero || '').toLowerCase().includes(termo) ||
+    (p.requerente || '').toLowerCase().includes(termo) ||
+    (p.assunto || '').toLowerCase().includes(termo));
+  $('listaProcessos').innerHTML = lista.length
+    ? lista.map(p => cardProcesso(p)).join('')
+    : '<div class="vazio">Nenhum processo encontrado. Toque em “+ Novo processo” para registar o primeiro.</div>';
+}
+
+function renderReunioes(){
+  const hoje = hojeISO();
+  const ordenadas = [...reunioes].sort((a,b) => b.data_reuniao.localeCompare(a.data_reuniao));
+  $('listaReunioes').innerHTML = ordenadas.length
+    ? ordenadas.map(r => {
+        const n = processos.filter(p => p.reuniao_id === r.id && p.fase !== 'Concluído').length;
+        const passada = r.data_reuniao < hoje;
+        return '<div class="cartao reu-card" data-reu="' + r.id + '" style="cursor:pointer' + (passada ? ';opacity:.6' : '') + '">' +
+          '<div class="reu-data">' + fmtData(r.data_reuniao) + '</div>' +
+          '<div class="reu-info">Limite de entrada: <b>' + fmtData(r.data_limite) + '</b>' +
+          (r.notas ? ' · ' + esc(r.notas) : '') + '</div>' +
+          '<span class="pill pill-trami">' + n + ' proc.</span></div>';
+      }).join('')
+    : '<div class="vazio">Sem reuniões registadas.</div>';
+}
+
+function renderRonda(){
+  const minDias = parseInt($('rondaDias').value, 10);
+  const lista = processos.filter(p => p.fase === 'Em tramitação' && diasDesde(p.atualizado_em) >= minDias);
+  if(!lista.length){
+    $('listaRonda').innerHTML = '<div class="vazio">Tudo verificado — nenhum processo por atualizar neste intervalo. 👍</div>';
+    return;
+  }
+  const grupos = {};
+  lista.forEach(p => {
+    const chave = p.situacao || 'Sem situação definida';
+    (grupos[chave] = grupos[chave] || []).push(p);
+  });
+  $('listaRonda').innerHTML = Object.keys(grupos).sort().map(g =>
+    '<div class="ronda-grupo">' +
+      '<h4>' + esc(g) + ' <span style="color:var(--cinza);font-weight:400">(' + grupos[g].length + ')</span></h4>' +
+      '<div class="proc-lista">' + grupos[g].map(p =>
+        '<div style="display:flex;gap:8px;align-items:stretch">' +
+          '<div style="flex:1;min-width:0">' + cardProcesso(p) + '</div>' +
+          '<button class="btn btn-suave btn-mini" data-verificado="' + p.id + '" style="align-self:center;white-space:nowrap">✓ Sem alteração</button>' +
+        '</div>').join('') + '</div>' +
+    '</div>').join('');
+}
+
+function renderArquivo(){
+  const termo = $('pesqArquivo').value.trim().toLowerCase();
+  let lista = processos.filter(p => p.fase === 'Concluído');
+  if(termo) lista = lista.filter(p =>
+    (p.numero || '').toLowerCase().includes(termo) ||
+    (p.requerente || '').toLowerCase().includes(termo) ||
+    (p.assunto || '').toLowerCase().includes(termo));
+  $('listaArquivo').innerHTML = lista.length
+    ? lista.map(p => cardProcesso(p)).join('')
+    : '<div class="vazio">Arquivo vazio' + (termo ? ' para esta pesquisa' : '') + '.</div>';
+}
+
+function renderUsers(){
+  $('tabelaUsers').querySelector('tbody').innerHTML = utilizadores.map(u =>
+    '<tr><td>' + esc(u.nome || '—') + '</td><td>' + esc(u.username) + '</td>' +
+    '<td>' + (u.papel === 'admin' ? 'Administrador' : 'Gestor') + '</td>' +
+    '<td class="accoes-linha"><button class="btn btn-fantasma btn-mini" data-edituser="' + u.id + '">Editar</button></td></tr>'
+  ).join('');
+}
+
+function preencherSelectReunioes(){
+  const futuras = reunioesFuturas();
+  const opts = '<option value="">— Sem reunião —</option>' +
+    futuras.map(r => '<option value="' + r.id + '">' + fmtData(r.data_reuniao) + ' (limite ' + fmtData(r.data_limite) + ')</option>').join('');
+  $('pReuniao').innerHTML = opts;
+  $('filtroReuniao').innerHTML = '<option value="">Todas as reuniões</option>' +
+    reunioes.map(r => '<option value="' + r.id + '">' + fmtData(r.data_reuniao) + '</option>').join('');
+  const prox = proximaReuniao();
+  const ordenadas = [...reunioes].sort((a,b) => b.data_reuniao.localeCompare(a.data_reuniao));
+  $('relReuniao').innerHTML = ordenadas.map(r =>
+    '<option value="' + r.id + '">' + fmtData(r.data_reuniao) + ' (limite ' + fmtData(r.data_limite) + ')</option>').join('');
+  if(prox) $('relReuniao').value = prox.id;
+}
+
+/* ============================================================
+   ATUALIZAÇÃO RÁPIDA
+   ============================================================ */
+let qaFaseSel = null;
+
+/* Serviços base e tarefas típicas de cada um (sempre editável/livre) */
+const SERVICOS_BASE = {
+  'SAU': ['entrada'],
+  'DAG': [],
+  'DDS': ['quantificar custos'],
+  'UDAJ': [],
+  'UDAJ-Associativismo': ['informar', 'informação final e anexar minuta de protocolo', 'elaboração final'],
+  'Vereação': ['indicação de valor']
+};
+function partirSituacao(sit){
+  if(!sit) return { servico:'', tarefa:'' };
+  const i = sit.indexOf(' — ');
+  if(i === -1) return { servico: sit, tarefa: '' };
+  return { servico: sit.slice(0, i), tarefa: sit.slice(i + 3) };
+}
+function comporSituacao(servico, tarefa){
+  if(servico && tarefa) return servico + ' — ' + tarefa;
+  return servico || tarefa || '';
+}
+/* Serviços conhecidos = base + os que já foram usados (aprendidos do histórico) */
+function servicosConhecidos(){
+  const set = {};
+  Object.keys(SERVICOS_BASE).forEach(s => { set[s.toLowerCase()] = s; });
+  situacoes.forEach(s => {
+    const p = partirSituacao(s.texto);
+    if(p.servico && !set[p.servico.toLowerCase()]) set[p.servico.toLowerCase()] = p.servico;
+  });
+  return Object.values(set);
+}
+/* Tarefas típicas do serviço = base + aprendidas do histórico desse serviço */
+function tarefasDoServico(servico){
+  const chaveBase = Object.keys(SERVICOS_BASE).find(s => s.toLowerCase() === servico.toLowerCase());
+  const set = {};
+  (chaveBase ? SERVICOS_BASE[chaveBase] : []).forEach(t => { set[t.toLowerCase()] = t; });
+  situacoes.forEach(s => {
+    const p = partirSituacao(s.texto);
+    if(p.tarefa && p.servico.toLowerCase() === servico.toLowerCase() && !set[p.tarefa.toLowerCase()])
+      set[p.tarefa.toLowerCase()] = p.tarefa;
+  });
+  return Object.values(set);
+}
+function abrirQuick(p){
+  procAtual = p;
+  qaFaseSel = p.fase;
+  $('qaNum').textContent = p.numero;
+  const reu = reuniaoDe(p.reuniao_id);
+  $('qaInfo').textContent = (p.requerente ? p.requerente + ' — ' : '') + (p.assunto || '') +
+    (reu ? ' · Reunião ' + fmtData(reu.data_reuniao) : '');
+  $('qaAtual').textContent = p.fase === 'Em tramitação'
+    ? '📍 Atualmente: ' + (p.situacao || 'sem situação definida')
+    : '';
+  $('qaFases').innerHTML = FASES.map(f =>
+    '<button class="fase-btn' + (f === qaFaseSel ? ' sel' : '') + '" data-qafase="' + f + '">' + f + '</button>').join('');
+  const partes = partirSituacao(p.situacao);
+  const conhecido = servicosConhecidos().find(s => s.toLowerCase() === partes.servico.toLowerCase());
+  if(conhecido){
+    qaServicoSel = conhecido;
+    $('qaServOutro').value = '';
+    $('qaServOutroBloco').style.display = 'none';
+  }else{
+    qaServicoSel = null;
+    $('qaServOutro').value = partes.servico;
+    $('qaServOutroBloco').style.display = partes.servico ? '' : 'none';
+  }
+  $('qaTarefa').value = partes.tarefa;
+  $('qaData').value = hojeISO();
+  $('qaNota').value = '';
+  atualizarBlocoSituacao();
+  renderServicoBotoes();
+  renderTarefaBotoes();
+  abrirModal('mQuick');
+}
+function atualizarBlocoSituacao(){
+  $('qaSitBloco').style.display = qaFaseSel === 'Em tramitação' ? '' : 'none';
+}
+let qaServicoSel = null;
+function servicoAtual(){
+  return qaServicoSel || $('qaServOutro').value.trim();
+}
+function renderServicoBotoes(){
+  const lista = servicosConhecidos().sort((a,b) => a.localeCompare(b, 'pt'));
+  const outroAtivo = $('qaServOutroBloco').style.display !== 'none';
+  $('qaServicos').innerHTML = lista.map(s =>
+    '<button class="fase-btn' + (qaServicoSel && s.toLowerCase() === qaServicoSel.toLowerCase() ? ' sel' : '') +
+    '" data-serv="' + esc(s) + '">' + esc(s) + '</button>').join('') +
+    '<button class="fase-btn' + (outroAtivo ? ' sel' : '') + '" data-serv-outro="1">✎ Outro</button>';
+}
+function renderTarefaBotoes(){
+  const serv = servicoAtual();
+  const atual = $('qaTarefa').value.trim().toLowerCase();
+  const lista = serv ? tarefasDoServico(serv) : [];
+  $('qaTarefas').innerHTML = lista.length
+    ? lista.map(t => '<button class="fase-btn' + (t.toLowerCase() === atual ? ' sel' : '') +
+        '" data-tar="' + esc(t) + '">' + esc(t) + '</button>').join('')
+    : '<span style="font-size:.75rem;color:var(--cinza)">' +
+      (serv ? 'Sem tarefas típicas registadas para este serviço — escreva abaixo.' : 'Escolha primeiro o serviço.') + '</span>';
+}
+async function guardarQuick(){
+  if(!procAtual) return;
+  const novaFase = qaFaseSel;
+  const novaSit = novaFase === 'Em tramitação'
+    ? (comporSituacao(servicoAtual(), $('qaTarefa').value.trim()) || null)
+    : null;
+  const nota = $('qaNota').value.trim();
+  const dataMov = $('qaData').value || hojeISO();
+  const carimbo = dataMov === hojeISO() ? new Date().toISOString() : dataMov + 'T12:00:00';
+  try{
+    await sbPatch('processos', 'id=eq.' + procAtual.id, {
+      fase: novaFase, situacao: novaSit, atualizado_em: carimbo
+    });
+    await sbPost('movimentos', {
+      processo_id: procAtual.id, data: carimbo, fase: novaFase, situacao: novaSit, nota: nota || null
+    });
+    if(novaSit) await registarSituacao(novaSit);
+    fecharModal('mQuick');
+    toast('Processo ' + procAtual.numero + ' atualizado.');
+    await carregarTudo();
+  }catch(e){ console.error(e); toast('Erro ao guardar a atualização.'); }
+}
+async function registarSituacao(texto){
+  try{
+    const existe = situacoes.find(s => s.texto.toLowerCase() === texto.toLowerCase());
+    if(existe){
+      await sbPatch('situacoes_sugeridas', 'id=eq.' + existe.id, { usos: (existe.usos || 1) + 1 });
+    }else{
+      await sbPost('situacoes_sugeridas', { texto: texto });
+    }
+  }catch(e){ console.error('situação sugerida:', e); }
+}
+
+/* ============================================================
+   FICHA DO PROCESSO (timeline)
+   ============================================================ */
+async function abrirFicha(p){
+  $('fichaTitulo').textContent = 'Processo ' + p.numero;
+  const reu = reuniaoDe(p.reuniao_id);
+  $('fichaCabeca').innerHTML =
+    '<div class="qa-cabeca">' +
+      '<div class="proc-l1">' + pillFase(p.fase) + pillDias(p) + '</div>' +
+      '<p style="margin-top:6px"><b>' + esc(p.requerente || '—') + '</b></p>' +
+      '<p>' + esc(p.assunto || '') + '</p>' +
+      '<p style="font-size:.8rem;color:var(--cinza);margin-top:4px">Entrada: ' + fmtData(p.data_entrada) +
+      (reu ? ' · Reunião alvo: ' + fmtData(reu.data_reuniao) : ' · Sem reunião alvo') + '</p>' +
+    '</div>';
+  $('fichaTimeline').innerHTML = '<div class="vazio">A carregar histórico…</div>';
+  abrirModal('mFicha');
+  try{
+    const movs = await sbGet('movimentos?processo_id=eq.' + p.id + '&select=*&order=data.desc');
+    $('fichaTimeline').innerHTML = movs.length
+      ? movs.map(m =>
+          '<div class="tl-item"><div class="tl-ponto"></div>' +
+          '<div class="tl-data">' + fmtDataHora(m.data) + '</div>' +
+          '<div class="tl-corpo"><b>' + esc(m.fase || '') + '</b>' +
+          (m.situacao ? ' — ' + esc(m.situacao) : '') + '</div>' +
+          (m.nota ? '<div class="tl-nota">' + esc(m.nota) + '</div>' : '') +
+          '</div>').join('')
+      : '<div class="vazio">Sem movimentos registados.</div>';
+  }catch(e){
+    console.error(e);
+    $('fichaTimeline').innerHTML = '<div class="vazio">Erro ao carregar o histórico.</div>';
+  }
+}
+
+/* ============================================================
+   PROCESSOS — CRUD
+   ============================================================ */
+function abrirNovoProcesso(){
+  procAtual = null;
+  $('mProcTitulo').textContent = 'Novo processo';
+  $('pNumero').value = '';
+  $('pEntrada').value = hojeISO();
+  $('pRequerente').value = '';
+  $('pAssunto').value = '';
+  $('pFase').innerHTML = FASES.map(f => '<option>' + f + '</option>').join('');
+  $('pFase').value = 'Em tramitação';
+  $('pSituacao').value = '';
+  const prox = proximaReuniao();
+  $('pReuniao').value = prox ? prox.id : '';
+  $('pApagar').style.display = 'none';
+  abrirModal('mProc');
+}
+function abrirEditarProcesso(p){
+  procAtual = p;
+  $('mProcTitulo').textContent = 'Editar processo';
+  $('pNumero').value = p.numero || '';
+  $('pEntrada').value = p.data_entrada || '';
+  $('pRequerente').value = p.requerente || '';
+  $('pAssunto').value = p.assunto || '';
+  $('pFase').innerHTML = FASES.map(f => '<option>' + f + '</option>').join('');
+  $('pFase').value = p.fase;
+  $('pSituacao').value = p.situacao || '';
+  $('pReuniao').value = p.reuniao_id || '';
+  $('pApagar').style.display = '';
+  fecharModal('mQuick');
+  abrirModal('mProc');
+}
+async function guardarProcesso(){
+  const numero = $('pNumero').value.trim();
+  if(!numero){ toast('Indique o n.º do processo.'); return; }
+  const corpo = {
+    numero: numero,
+    data_entrada: $('pEntrada').value || null,
+    requerente: $('pRequerente').value.trim() || null,
+    assunto: $('pAssunto').value.trim() || null,
+    fase: $('pFase').value,
+    situacao: $('pFase').value === 'Em tramitação' ? ($('pSituacao').value.trim() || null) : null,
+    reuniao_id: $('pReuniao').value || null,
+    atualizado_em: new Date().toISOString()
+  };
+  try{
+    if(procAtual){
+      await sbPatch('processos', 'id=eq.' + procAtual.id, corpo);
+      await sbPost('movimentos', {
+        processo_id: procAtual.id, fase: corpo.fase, situacao: corpo.situacao,
+        nota: 'Dados do processo editados'
+      });
+      toast('Processo atualizado.');
+    }else{
+      const novo = await sbPost('processos', corpo);
+      await sbPost('movimentos', {
+        processo_id: novo[0].id, fase: corpo.fase, situacao: corpo.situacao,
+        nota: 'Entrada do processo'
+      });
+      if(corpo.situacao) await registarSituacao(corpo.situacao);
+      toast('Processo ' + numero + ' criado.');
+    }
+    fecharModal('mProc');
+    await carregarTudo();
+  }catch(e){ console.error(e); toast('Erro ao guardar o processo.'); }
+}
+async function apagarProcesso(){
+  if(!procAtual) return;
+  const ok = await confirmar('Apagar processo',
+    'Apagar definitivamente o processo ' + procAtual.numero + ' e todo o seu histórico?');
+  if(!ok) return;
+  try{
+    await sbDelete('processos', 'id=eq.' + procAtual.id);
+    fecharModal('mProc');
+    toast('Processo apagado.');
+    await carregarTudo();
+  }catch(e){ console.error(e); toast('Erro ao apagar.'); }
+}
+
+/* ============================================================
+   ADIAR / MUDANÇA DE REUNIÃO
+   ============================================================ */
+function abrirAdiar(){
+  if(!procAtual) return;
+  const futuras = reunioesFuturas().filter(r => r.id !== procAtual.reuniao_id);
+  if(!futuras.length){ toast('Não há outra reunião futura. Crie-a primeiro no separador Reuniões.'); return; }
+  $('adReuniao').innerHTML = futuras.map(r =>
+    '<option value="' + r.id + '">' + fmtData(r.data_reuniao) + ' (limite ' + fmtData(r.data_limite) + ')</option>').join('');
+  abrirModal('mAdiar');
+}
+async function confirmarAdiar(){
+  if(!procAtual) return;
+  const novaId = $('adReuniao').value;
+  const antiga = reuniaoDe(procAtual.reuniao_id);
+  const nova = reuniaoDe(novaId);
+  try{
+    await sbPatch('processos', 'id=eq.' + procAtual.id, {
+      reuniao_id: novaId, atualizado_em: new Date().toISOString()
+    });
+    await sbPost('movimentos', {
+      processo_id: procAtual.id, fase: procAtual.fase, situacao: procAtual.situacao,
+      nota: 'Adiado de ' + (antiga ? fmtData(antiga.data_reuniao) : '—') + ' para ' + fmtData(nova.data_reuniao)
+    });
+    fecharModal('mAdiar');
+    fecharModal('mQuick');
+    toast('Processo adiado para ' + fmtData(nova.data_reuniao) + '.');
+    await carregarTudo();
+  }catch(e){ console.error(e); toast('Erro ao adiar.'); }
+}
+
+/* ============================================================
+   RONDA — confirmar sem alteração
+   ============================================================ */
+async function marcarVerificado(id){
+  const p = processos.find(x => x.id === id);
+  if(!p) return;
+  try{
+    await sbPatch('processos', 'id=eq.' + id, { atualizado_em: new Date().toISOString() });
+    await sbPost('movimentos', {
+      processo_id: id, fase: p.fase, situacao: p.situacao,
+      nota: 'Ronda de verificação — sem alteração'
+    });
+    toast(p.numero + ' verificado.');
+    await carregarTudo();
+  }catch(e){ console.error(e); toast('Erro ao registar verificação.'); }
+}
+
+/* ============================================================
+   REUNIÕES — CRUD
+   ============================================================ */
+function sugerirProximaData(){
+  const ultima = [...reunioes].sort((a,b) => b.data_reuniao.localeCompare(a.data_reuniao))[0];
+  const base = ultima ? new Date(ultima.data_reuniao + 'T12:00:00') : new Date();
+  if(ultima) base.setDate(base.getDate() + 14);
+  else { // próxima sexta-feira
+    const d = base.getDay();
+    base.setDate(base.getDate() + ((5 - d + 7) % 7 || 7));
+  }
+  const lim = new Date(base); lim.setDate(lim.getDate() - 5);
+  const iso = x => x.getFullYear() + '-' + String(x.getMonth()+1).padStart(2,'0') + '-' + String(x.getDate()).padStart(2,'0');
+  return { data: iso(base), limite: iso(lim) };
+}
+function abrirNovaReuniao(){
+  reuAtual = null;
+  $('mReuTitulo').textContent = 'Nova reunião';
+  const sug = sugerirProximaData();
+  $('rData').value = sug.data;
+  $('rLimite').value = sug.limite;
+  $('rNotas').value = '';
+  $('rAviso').style.display = 'none';
+  $('rApagar').style.display = 'none';
+  abrirModal('mReuniao');
+}
+function abrirEditarReuniao(r){
+  reuAtual = r;
+  $('mReuTitulo').textContent = 'Editar reunião';
+  $('rData').value = r.data_reuniao;
+  $('rLimite').value = r.data_limite;
+  $('rNotas').value = r.notas || '';
+  $('rAviso').style.display = '';
+  $('rApagar').style.display = '';
+  abrirModal('mReuniao');
+}
+async function guardarReuniao(){
+  const data = $('rData').value, limite = $('rLimite').value;
+  if(!data || !limite){ toast('Indique a data da reunião e a data limite.'); return; }
+  const corpo = { data_reuniao: data, data_limite: limite, notas: $('rNotas').value.trim() || null };
+  try{
+    if(reuAtual) await sbPatch('reunioes', 'id=eq.' + reuAtual.id, corpo);
+    else await sbPost('reunioes', corpo);
+    fecharModal('mReuniao');
+    toast(reuAtual ? 'Reunião atualizada — os processos associados acompanham a nova data.' : 'Reunião criada.');
+    await carregarTudo();
+  }catch(e){ console.error(e); toast('Erro ao guardar a reunião.'); }
+}
+async function apagarReuniao(){
+  if(!reuAtual) return;
+  const n = processos.filter(p => p.reuniao_id === reuAtual.id).length;
+  const ok = await confirmar('Apagar reunião',
+    'Apagar a reunião de ' + fmtData(reuAtual.data_reuniao) + '?' +
+    (n ? ' Os ' + n + ' processos associados ficam sem reunião alvo.' : ''));
+  if(!ok) return;
+  try{
+    await sbDelete('reunioes', 'id=eq.' + reuAtual.id);
+    fecharModal('mReuniao');
+    toast('Reunião apagada.');
+    await carregarTudo();
+  }catch(e){ console.error(e); toast('Erro ao apagar a reunião.'); }
+}
+
+/* ============================================================
+   UTILIZADORES — CRUD (admin)
+   ============================================================ */
+function abrirNovoUser(){
+  userAtual = null;
+  $('mUserTitulo').textContent = 'Novo utilizador';
+  $('uNome').value = ''; $('uUsername').value = ''; $('uPassword').value = '';
+  $('uPapel').value = 'gestor';
+  $('uApagar').style.display = 'none';
+  abrirModal('mUser');
+}
+function abrirEditarUser(u){
+  userAtual = u;
+  $('mUserTitulo').textContent = 'Editar utilizador';
+  $('uNome').value = u.nome || '';
+  $('uUsername').value = u.username;
+  $('uPassword').value = u.password;
+  $('uPapel').value = u.papel;
+  $('uApagar').style.display = u.id === sessao.id ? 'none' : '';
+  abrirModal('mUser');
+}
+async function guardarUser(){
+  const corpo = {
+    nome: $('uNome').value.trim() || null,
+    username: $('uUsername').value.trim(),
+    password: $('uPassword').value,
+    papel: $('uPapel').value
+  };
+  if(!corpo.username || !corpo.password){ toast('Preencha utilizador e palavra-passe.'); return; }
+  try{
+    if(userAtual) await sbPatch('utilizadores', 'id=eq.' + userAtual.id, corpo);
+    else await sbPost('utilizadores', corpo);
+    fecharModal('mUser');
+    toast('Utilizador guardado.');
+    await carregarTudo();
+  }catch(e){ console.error(e); toast('Erro ao guardar (o nome de utilizador pode já existir).'); }
+}
+async function apagarUser(){
+  if(!userAtual) return;
+  const ok = await confirmar('Apagar utilizador', 'Apagar o utilizador ' + userAtual.username + '?');
+  if(!ok) return;
+  try{
+    await sbDelete('utilizadores', 'id=eq.' + userAtual.id);
+    fecharModal('mUser');
+    toast('Utilizador apagado.');
+    await carregarTudo();
+  }catch(e){ console.error(e); toast('Erro ao apagar.'); }
+}
+
+/* ============================================================
+   EVENTOS
+   ============================================================ */
+document.addEventListener('click', function(ev){
+  const t = ev.target;
+
+  // fechar modais (X ou clique no fundo)
+  if(t.dataset.fecha) fecharModal(t.dataset.fecha);
+  if(t.classList.contains('modal-fundo')) t.classList.remove('aberto');
+
+  // navegação
+  const tab = t.closest('.tab');
+  if(tab){
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('ativo'));
+    tab.classList.add('ativo');
+    document.querySelectorAll('.seccao').forEach(x => x.classList.remove('ativa'));
+    $('sec-' + tab.dataset.sec).classList.add('ativa');
+    return;
+  }
+
+  // fase na atualização rápida
+  if(t.dataset.qafase){
+    qaFaseSel = t.dataset.qafase;
+    document.querySelectorAll('#qaFases .fase-btn').forEach(b =>
+      b.classList.toggle('sel', b.dataset.qafase === qaFaseSel));
+    atualizarBlocoSituacao();
+    return;
+  }
+
+  // seleção de serviço
+  if(t.dataset.serv !== undefined && t.classList.contains('fase-btn')){
+    qaServicoSel = t.dataset.serv;
+    $('qaServOutro').value = '';
+    $('qaServOutroBloco').style.display = 'none';
+    $('qaTarefa').value = '';
+    renderServicoBotoes();
+    renderTarefaBotoes();
+    return;
+  }
+  if(t.dataset.servOutro !== undefined){
+    qaServicoSel = null;
+    $('qaServOutroBloco').style.display = '';
+    renderServicoBotoes();
+    renderTarefaBotoes();
+    $('qaServOutro').focus();
+    return;
+  }
+  // seleção de tarefa
+  if(t.dataset.tar !== undefined && t.classList.contains('fase-btn')){
+    $('qaTarefa').value = t.dataset.tar;
+    renderTarefaBotoes();
+    return;
+  }
+
+  // ronda: verificado sem alteração
+  if(t.dataset.verificado){ marcarVerificado(t.dataset.verificado); return; }
+
+  // editar utilizador
+  if(t.dataset.edituser){
+    const u = utilizadores.find(x => x.id === t.dataset.edituser);
+    if(u) abrirEditarUser(u);
+    return;
+  }
+
+  // cartão de reunião
+  const reuCard = t.closest('[data-reu]');
+  if(reuCard){
+    const r = reunioes.find(x => x.id === reuCard.dataset.reu);
+    if(r) abrirEditarReuniao(r);
+    return;
+  }
+
+  // cartão de processo → atualização rápida
+  const card = t.closest('[data-proc]');
+  if(card){
+    const p = processos.find(x => x.id === card.dataset.proc);
+    if(p) abrirQuick(p);
+  }
+});
+
+$('btnEntrar').addEventListener('click', entrar);
+$('loginPass').addEventListener('keydown', e => { if(e.key === 'Enter') entrar(); });
+$('loginUser').addEventListener('keydown', e => { if(e.key === 'Enter') entrar(); });
+$('btnSair').addEventListener('click', sair);
+
+$('btnNovoProc').addEventListener('click', abrirNovoProcesso);
+$('pGuardar').addEventListener('click', guardarProcesso);
+$('pApagar').addEventListener('click', apagarProcesso);
+
+$('qaGuardar').addEventListener('click', guardarQuick);
+$('qaFicha').addEventListener('click', () => { fecharModal('mQuick'); if(procAtual) abrirFicha(procAtual); });
+$('qaAdiar').addEventListener('click', abrirAdiar);
+$('qaEditar').addEventListener('click', () => { if(procAtual) abrirEditarProcesso(procAtual); });
+$('qaServOutro').addEventListener('input', renderTarefaBotoes);
+$('qaTarefa').addEventListener('input', renderTarefaBotoes);
+$('adConfirmar').addEventListener('click', confirmarAdiar);
+
+$('btnNovaReuniao').addEventListener('click', abrirNovaReuniao);
+$('rGuardar').addEventListener('click', guardarReuniao);
+$('rApagar').addEventListener('click', apagarReuniao);
+
+$('btnNovoUser').addEventListener('click', abrirNovoUser);
+$('uGuardar').addEventListener('click', guardarUser);
+$('uApagar').addEventListener('click', apagarUser);
+
+$('pesqProc').addEventListener('input', renderProcessos);
+$('filtroReuniao').addEventListener('change', renderProcessos);
+$('pesqArquivo').addEventListener('input', renderArquivo);
+$('rondaDias').addEventListener('change', renderRonda);
+
+document.addEventListener('click', function(ev){
+  const chip = ev.target.closest('.chip');
+  if(chip && chip.dataset.fase !== undefined){
+    filtroFase = chip.dataset.fase;
+    renderProcessos();
+  }
+});
+
+/* ============================================================
+   RELATÓRIOS
+   ============================================================ */
+function janelaImpressao(tituloDoc, corpoHTML){
+  const w = window.open('', '_blank');
+  if(!w){ toast('Permita janelas pop-up para gerar o relatório.'); return; }
+  const doc = '<!DOCTYPE html><html lang="pt-PT"><head><meta charset="UTF-8">' +
+    '<title>' + esc(tituloDoc) + '</title><style>' +
+    '@page{size:A4;margin:16mm 15mm}' +   // fora do @media print (Safari iOS)
+    'body{font-family:Arial,Helvetica,sans-serif;color:#1a1a1a;font-size:10.5pt;line-height:1.45;margin:0;padding:20px}' +
+    '.cab{text-align:center;border-bottom:2.5px solid #0f3d7a;padding-bottom:10px;margin-bottom:6px}' +
+    '.cab .mun{font-size:13pt;font-weight:bold;letter-spacing:.06em;text-transform:uppercase;color:#0f3d7a}' +
+    '.cab .srv{font-size:9pt;color:#555;margin-top:2px}' +
+    'h1{font-size:13.5pt;text-align:center;margin:16px 0 2px;color:#0f3d7a}' +
+    '.sub{text-align:center;font-size:9pt;color:#666;margin-bottom:18px}' +
+    'h2{font-size:11pt;color:#0f3d7a;border-bottom:1px solid #c9d4e6;padding-bottom:3px;margin:20px 0 8px}' +
+    '.resumo{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:14px 0 6px}' +
+    '.resumo div{border:1px solid #c9d4e6;border-radius:6px;padding:6px 14px;text-align:center;font-size:9pt}' +
+    '.resumo b{display:block;font-size:14pt;color:#0f3d7a}' +
+    'table{width:100%;border-collapse:collapse;margin:6px 0 4px;font-size:9pt}' +
+    'th{background:#e8eef8;color:#0f3d7a;text-align:left;padding:5px 7px;border:1px solid #b9c8de}' +
+    'td{padding:5px 7px;border:1px solid #cfd8e6;vertical-align:top}' +
+    'tr{page-break-inside:avoid}' +
+    '.alerta{color:#b02020;font-weight:bold}' +
+    '.assin{margin-top:44px;text-align:center;page-break-inside:avoid}' +
+    '.assin .linha{margin:0 auto;width:230px;border-top:1px solid #333;padding-top:5px;font-size:9.5pt}' +
+    '.rodape{margin-top:26px;font-size:8pt;color:#888;text-align:center}' +
+    '.no-print{position:fixed;top:12px;right:12px}' +
+    '.no-print button{background:#0f3d7a;color:#fff;border:none;border-radius:8px;padding:10px 18px;font-size:11pt;cursor:pointer}' +
+    '@media print{.no-print{display:none}}' +
+    '</style></head><body>' +
+    '<div class="no-print"><button onclick="window.print()">Imprimir / Guardar PDF</button></div>' +
+    '<div class="cab"><div class="mun">Município de Cabeceiras de Basto</div>' +
+    '<div class="srv">UDAJ — Associativismo · Gestão de processos para reunião de câmara (GestPro)</div></div>' +
+    corpoHTML +
+    '<div class="assin"><div class="linha">' + esc(sessao && sessao.nome ? sessao.nome : '') + '</div></div>' +
+    '<div class="rodape">Documento gerado pelo GestPro em ' + fmtDataHora(new Date().toISOString()) + '</div>' +
+    '</body></html>';
+  w.document.write(doc);
+  w.document.close();
+}
+function tabelaProcessosHTML(lista, comSituacao){
+  if(!lista.length) return '<p style="font-size:9.5pt;color:#666">Sem processos nesta fase.</p>';
+  let html = '<table><tr><th style="width:14%">N.º</th><th style="width:20%">Requerente</th><th>Assunto</th>';
+  if(comSituacao) html += '<th style="width:22%">Situação</th>';
+  html += '<th style="width:13%">Reunião alvo</th><th style="width:9%">Dias s/ atual.</th></tr>';
+  lista.forEach(p => {
+    const reu = reuniaoDe(p.reuniao_id);
+    const d = diasDesde(p.atualizado_em);
+    html += '<tr><td><b>' + esc(p.numero) + '</b></td><td>' + esc(p.requerente || '—') + '</td>' +
+      '<td>' + esc(p.assunto || '—') + '</td>' +
+      (comSituacao ? '<td>' + esc(p.situacao || '—') + '</td>' : '') +
+      '<td>' + (reu ? fmtData(reu.data_reuniao) : '—') + '</td>' +
+      '<td' + (d >= 10 ? ' class="alerta"' : '') + '>' + d + '</td></tr>';
+  });
+  return html + '</table>';
+}
+function relatorioSituacao(){
+  const incluirConcluidos = $('relIncConcluidos').checked;
+  const fases = incluirConcluidos ? FASES : FASES.filter(f => f !== 'Concluído');
+  const ativos = processos.filter(p => fases.includes(p.fase));
+  let corpo = '<h1>Ponto de Situação — Processos para Reunião de Câmara</h1>' +
+    '<div class="sub">Reportado a ' + fmtData(hojeISO()) + '</div>';
+  corpo += '<div class="resumo">' + fases.map(f =>
+    '<div><b>' + ativos.filter(p => p.fase === f).length + '</b>' + esc(f) + '</div>').join('') + '</div>';
+  const prox = proximaReuniao();
+  if(prox){
+    corpo += '<p style="text-align:center;font-size:9.5pt">Próxima reunião: <b>' + fmtData(prox.data_reuniao) +
+      '</b> · Data limite de entrada de assuntos: <b>' + fmtData(prox.data_limite) + '</b></p>';
+  }
+  fases.forEach(f => {
+    const lista = ativos.filter(p => p.fase === f)
+      .sort((a,b) => diasDesde(b.atualizado_em) - diasDesde(a.atualizado_em));
+    corpo += '<h2>' + esc(f) + ' (' + lista.length + ')</h2>' +
+      tabelaProcessosHTML(lista, f === 'Em tramitação');
+  });
+  janelaImpressao('Ponto de situação — ' + fmtData(hojeISO()), corpo);
+}
+function relatorioReuniao(){
+  const id = $('relReuniao').value;
+  const reu = reuniaoDe(id);
+  if(!reu){ toast('Crie primeiro uma reunião.'); return; }
+  const lista = processos.filter(p => p.reuniao_id === id);
+  let corpo = '<h1>Reunião de Câmara de ' + fmtData(reu.data_reuniao) + '</h1>' +
+    '<div class="sub">Data limite de entrada de assuntos: ' + fmtData(reu.data_limite) +
+    (reu.notas ? ' · ' + esc(reu.notas) : '') + '</div>';
+  corpo += '<div class="resumo">' +
+    '<div><b>' + lista.length + '</b>Total</div>' +
+    '<div><b>' + lista.filter(p => p.fase === 'Pronto para reunião').length + '</b>Prontos</div>' +
+    '<div><b>' + lista.filter(p => p.fase === 'Em tramitação').length + '</b>Em tramitação</div>' +
+    '<div><b>' + lista.filter(p => ['Deliberado','Informado','Concluído'].includes(p.fase)).length + '</b>Deliberados+</div></div>';
+  FASES.forEach(f => {
+    const doGrupo = lista.filter(p => p.fase === f);
+    if(!doGrupo.length) return;
+    corpo += '<h2>' + esc(f) + ' (' + doGrupo.length + ')</h2>' +
+      tabelaProcessosHTML(doGrupo, f === 'Em tramitação');
+  });
+  if(!lista.length) corpo += '<p style="text-align:center;color:#666;margin-top:20px">Sem processos associados a esta reunião.</p>';
+  janelaImpressao('Reunião de ' + fmtData(reu.data_reuniao), corpo);
+}
+function carregarXLSX(){
+  return new Promise(function(res, rej){
+    if(window.XLSX) return res();
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+    s.onload = res; s.onerror = rej;
+    document.head.appendChild(s);
+  });
+}
+async function exportarExcel(){
+  try{
+    toast('A preparar o ficheiro Excel…');
+    await carregarXLSX();
+    const linhas = [...processos]
+      .sort((a,b) => (a.numero || '').localeCompare(b.numero || '', 'pt'))
+      .map(p => {
+        const reu = reuniaoDe(p.reuniao_id);
+        return {
+          'N.º Processo': p.numero,
+          'Requerente': p.requerente || '',
+          'Assunto': p.assunto || '',
+          'Data de entrada': p.data_entrada ? fmtData(p.data_entrada) : '',
+          'Fase': p.fase,
+          'Situação': p.situacao || '',
+          'Reunião alvo': reu ? fmtData(reu.data_reuniao) : '',
+          'Última atualização': fmtDataHora(p.atualizado_em),
+          'Dias sem atualização': diasDesde(p.atualizado_em)
+        };
+      });
+    const ws = XLSX.utils.json_to_sheet(linhas);
+    ws['!cols'] = [{wch:14},{wch:24},{wch:44},{wch:13},{wch:18},{wch:28},{wch:13},{wch:17},{wch:10}];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Processos');
+    XLSX.writeFile(wb, 'GestPro_Processos_' + hojeISO() + '.xlsx');
+    toast('Excel descarregado.');
+  }catch(e){ console.error(e); toast('Erro ao gerar o Excel.'); }
+}
+$('btnRelSituacao').addEventListener('click', relatorioSituacao);
+$('btnRelReuniao').addEventListener('click', relatorioReuniao);
+$('btnRelExcel').addEventListener('click', exportarExcel);
+
+/* ---------- Arranque ---------- */
+(function init(){
+  if(SUPABASE_URL.includes('COLOCAR') || SUPABASE_KEY.includes('COLOCAR')){
+    document.querySelector('.login-card').insertAdjacentHTML('beforeend',
+      '<p style="margin-top:14px;font-size:.8rem;color:var(--verm);text-align:center">⚠️ Configuração em falta: edite SUPABASE_URL e SUPABASE_KEY no topo do ficheiro.</p>');
+  }
+  const guardada = localStorage.getItem('gestpro_sessao');
+  if(guardada){
+    try{ sessao = JSON.parse(guardada); iniciarApp(); }
+    catch(e){ localStorage.removeItem('gestpro_sessao'); }
+  }
+})();
+</script>
+</body>
+</html>
