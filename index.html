@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>GestEquip · DDS</title>
+<style>
+  :root{
+    --azul:#0f3d7a; --azul-med:#2e86c1; --verde:#1e8449;
+    --laranja:#c0561b; --card:#eaf2fb; --fundo:#f4f6fa; --texto:#1a1a1a;
+    --sub:#44607f; --aviso-bg:#fbeee4; --aviso-tx:#a04000; --borda:#d8e0ea;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  body{margin:0; font-family:-apple-system,'Segoe UI',Roboto,Arial,sans-serif;
+    background:var(--fundo); color:var(--texto);}
+  button{font-family:inherit;}
+  header{background:var(--azul); color:#fff; padding:calc(env(safe-area-inset-top) + 12px) 16px 0;
+    position:sticky; top:0; z-index:20;}
+  header h1{margin:0; font-size:17px; font-weight:700;}
+  header .sub{font-size:11.5px; opacity:.75; margin:2px 0 8px;}
+  .tabs{display:flex; gap:4px; overflow-x:auto; -webkit-overflow-scrolling:touch;}
+  .tabs button{flex:0 0 auto; background:none; border:none; color:#c8d6ea; font-size:13.5px;
+    font-weight:600; padding:9px 12px; border-bottom:3px solid transparent;}
+  .tabs button.ativo{color:#fff; border-bottom-color:#fff;}
+  main{padding:14px 16px calc(env(safe-area-inset-bottom) + 30px);}
+  .oculto{display:none !important;}
+  .msg{position:fixed; left:50%; transform:translateX(-50%); bottom:calc(env(safe-area-inset-bottom) + 20px);
+    background:#1a1a1a; color:#fff; padding:10px 18px; border-radius:22px; font-size:13.5px;
+    z-index:100; opacity:0; transition:opacity .25s; pointer-events:none; max-width:88%; text-align:center;}
+  .msg.ver{opacity:.95;}
+  /* Login */
+  #ecraLogin{position:fixed; inset:0; background:var(--azul); z-index:90; display:flex;
+    align-items:center; justify-content:center; padding:24px;}
+  .login-caixa{background:#fff; border-radius:16px; padding:26px 22px; width:100%; max-width:340px;}
+  .login-caixa h2{margin:0 0 4px; color:var(--azul); font-size:19px;}
+  .login-caixa .v{font-size:12px; color:#999; margin-bottom:16px;}
+  .login-caixa input{width:100%; font-size:16px; padding:12px; border:1px solid var(--borda);
+    border-radius:10px; margin-bottom:12px;}
+  .login-caixa button{width:100%; padding:13px; border:none; border-radius:12px;
+    background:var(--azul); color:#fff; font-size:15px; font-weight:700;}
+  .login-erro{color:#b03a2e; font-size:13px; margin:0 0 10px; display:none;}
+  /* Quadro */
+  .board{display:flex; gap:12px; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    scroll-snap-type:x mandatory; margin:0 -16px; padding:2px 16px 8px;}
+  .col{flex:0 0 82%; max-width:340px; scroll-snap-align:start; background:#fff;
+    border:1px solid var(--borda); border-radius:14px; overflow:hidden;
+    display:flex; flex-direction:column; align-self:flex-start;}
+  .col-head{color:#fff; padding:11px 12px; display:flex; align-items:center; gap:8px;}
+  .col-head .nome{font-weight:700; font-size:14px; flex:1; line-height:1.25;}
+  .col-head .conta{background:rgba(255,255,255,.22); border-radius:12px; padding:2px 9px;
+    font-size:12px; font-weight:700;}
+  .col-body{padding:10px; display:flex; flex-direction:column; gap:8px;}
+  .pessoa{background:var(--card); border:1px solid var(--borda); border-radius:10px;
+    padding:9px 11px; cursor:pointer;}
+  .pessoa .nm{font-weight:700; font-size:14px; color:var(--azul);}
+  .pessoa .fn{font-size:12.5px; color:var(--sub); margin-top:1px;}
+  .pessoa .fn.vazia{color:var(--aviso-tx); font-style:italic;}
+  .pessoa .tf{font-size:11.5px; color:#7a8ba1; margin-top:3px;}
+  .vazio-col{background:var(--aviso-bg); color:var(--aviso-tx); font-size:12.5px;
+    font-style:italic; border-radius:10px; padding:12px; text-align:center;}
+  .add-p{border:1.5px dashed var(--borda); background:none; color:var(--sub);
+    border-radius:10px; padding:9px; font-size:13px; font-weight:600;}
+  .add-col{flex:0 0 82%; max-width:340px; scroll-snap-align:start; border:2px dashed var(--borda);
+    border-radius:14px; background:none; color:var(--sub); font-size:14px; font-weight:600;
+    min-height:110px; align-self:stretch; cursor:pointer;}
+  @media (min-width: 900px){
+    .board{flex-wrap:wrap; overflow-x:visible; scroll-snap-type:none;}
+    .col,.add-col{flex:0 0 300px; max-width:300px;}
+  }
+  /* Lista funcionários */
+  .pesquisa{width:100%; font-size:16px; padding:11px 14px; border:1px solid var(--borda);
+    border-radius:12px; margin-bottom:12px;}
+  .lista-f{display:flex; flex-direction:column; gap:8px;}
+  .btn-largo{width:100%; padding:12px; border:1.5px dashed var(--borda); background:none;
+    color:var(--sub); border-radius:12px; font-size:14px; font-weight:600; margin-bottom:12px;}
+  /* Organograma */
+  .org-acao{display:flex; gap:8px; margin-bottom:12px;}
+  .org-acao button{border:1px solid var(--borda); background:#fff; color:var(--azul);
+    border-radius:20px; padding:8px 14px; font-size:13px; font-weight:600;}
+  .org-topo{max-width:340px; margin:0 auto; background:var(--azul); color:#fff;
+    border-radius:12px; padding:12px; text-align:center;}
+  .org-topo .t1{font-weight:700; font-size:15px;}
+  .org-topo .t2{font-size:12px; opacity:.8; margin-top:2px;}
+  .org-unidades{display:flex; gap:16px; justify-content:center; align-items:flex-start; flex-wrap:wrap;}
+  .org-unidade{flex:1 1 420px; max-width:560px; border:1px solid var(--borda);
+    border-radius:14px; padding:10px; background:#fbfcfe;}
+  .org-unidade-head{background:var(--azul-med); color:#fff; border-radius:10px;
+    padding:9px 12px; text-align:center; font-weight:700; font-size:14px; margin-bottom:10px;}
+  .org-unidade-head .u2{display:block; font-weight:400; font-size:11.5px; opacity:.9;}
+  .org-unidade .org-grid{flex-wrap:nowrap; justify-content:flex-start; overflow-x:auto;
+    -webkit-overflow-scrolling:touch; gap:10px;}
+  .org-unidade .org-eq{flex:0 0 200px; max-width:220px;}
+  .lig{width:1.5px; height:12px; background:#9aa7b8; margin:0 auto;}
+  .org-grid{display:flex; flex-wrap:wrap; gap:14px; justify-content:center; align-items:flex-start;}
+  .org-eq{flex:1 1 260px; max-width:300px;}
+  .org-eq.largo{flex-basis:100%; max-width:none;}
+  .org-eq-head{color:#fff; border-radius:10px; padding:10px 12px; text-align:center;
+    font-weight:700; font-size:14px;}
+  .org-eq-head .n{font-weight:400; font-size:12px; opacity:.85;}
+  .org-p{background:var(--card); border:1px solid var(--borda); border-radius:9px;
+    padding:8px 10px; text-align:center;}
+  .org-p .nm{font-weight:700; font-size:13px; color:var(--azul);}
+  .org-p .fn{font-size:11.5px; color:var(--sub);}
+  .org-p .fn.vazia{color:var(--aviso-tx); font-style:italic;}
+  .org-p .trf{font-size:10.5px; color:#7a8ba1; margin-top:3px; text-align:left;
+    padding-left:10px; line-height:1.35;}
+  .org-p .trf div{position:relative; padding-left:9px;}
+  .org-p .trf div::before{content:"•"; position:absolute; left:0;}
+  .org-vazio{background:var(--aviso-bg); color:var(--aviso-tx); border-radius:9px;
+    padding:10px; text-align:center; font-size:12px; font-style:italic;}
+  .org-cols{column-gap:14px;}
+  .org-cols .org-p{break-inside:avoid; margin-bottom:8px;}
+  .org-rodape{text-align:center; font-size:11px; color:#888; margin-top:16px;}
+  /* Necessidades */
+  .nec-card{background:#fff; border:1px solid var(--borda); border-radius:14px;
+    padding:14px; margin-bottom:12px;}
+  .nec-card h3{margin:0 0 10px; font-size:14.5px; color:var(--azul);}
+  .nec-linha{display:flex; gap:10px; margin-bottom:10px;}
+  .nec-linha .campo{flex:1; margin-bottom:0;}
+  .defice{font-weight:700;}
+  .defice.neg{color:#b03a2e;}
+  .defice.pos{color:var(--verde);}
+  /* Campos e modais */
+  .campo{margin-bottom:11px;}
+  .campo label{display:block; font-size:11.5px; font-weight:700; color:var(--sub);
+    margin-bottom:4px; text-transform:uppercase; letter-spacing:.4px;}
+  .campo input,.campo select,.campo textarea{width:100%; font-size:16px; padding:10px 12px;
+    border:1px solid var(--borda); border-radius:10px; background:#fff; color:var(--texto);
+    font-family:inherit; appearance:none;}
+  .campo textarea{min-height:70px;}
+  .veu{position:fixed; inset:0; background:rgba(15,30,55,.45); z-index:50; display:none;
+    align-items:flex-end; justify-content:center;}
+  .veu.aberto{display:flex;}
+  .modal{background:#fff; width:100%; max-width:520px; border-radius:18px 18px 0 0;
+    padding:18px 18px calc(env(safe-area-inset-bottom) + 18px); max-height:88vh; overflow-y:auto;
+    -webkit-overflow-scrolling:touch;}
+  .modal h2{margin:0 0 14px; font-size:16px; color:var(--azul);}
+  .modal-head{position:sticky; top:-18px; background:#fff; z-index:5; margin:-18px -18px 12px;
+    padding:14px 18px 10px; border-bottom:1px solid var(--borda);}
+  .modal-head h2{margin:0; font-size:16px; color:var(--azul);}
+  .modal-head .sub-nome{font-size:13px; color:var(--sub); margin-top:2px; min-height:16px;}
+  .duas{display:flex; gap:10px;}
+  .duas .campo{flex:1;}
+  .botoes{display:flex; gap:10px; margin-top:14px;}
+  .botoes button{flex:1; padding:13px; border-radius:12px; font-size:15px; font-weight:700; border:none;}
+  .b-prim{background:var(--azul); color:#fff;}
+  .b-sec{background:#eef2f7; color:var(--azul);}
+  .b-perigo{background:#fdecea; color:#b03a2e;}
+  .confirmar{background:#fdecea; border-radius:12px; padding:12px; margin-top:14px; display:none;}
+  .confirmar.aberto{display:block;}
+  .confirmar p{margin:0 0 10px; font-size:13.5px; color:#b03a2e;}
+  /* Tarefas na ficha */
+  .tarefas-titulo{font-size:11.5px; font-weight:700; color:var(--sub); text-transform:uppercase;
+    letter-spacing:.4px; margin:14px 0 6px;}
+  .tarefa{display:flex; align-items:center; gap:8px; background:var(--fundo);
+    border-radius:9px; padding:8px 10px; margin-bottom:6px;}
+  .tarefa span{flex:1; font-size:13.5px;}
+  .tarefa button{border:none; background:none; color:#b03a2e; font-size:17px; padding:2px 6px;}
+  .tarefa-nova{display:flex; gap:8px;}
+  .tarefa-nova input{flex:1; font-size:16px; padding:10px 12px; border:1px solid var(--borda);
+    border-radius:10px;}
+  .tarefa-nova button{border:none; background:var(--azul); color:#fff; border-radius:10px;
+    padding:0 16px; font-size:14px; font-weight:700;}
+  .col-head .hor{font-size:11px; opacity:.85; font-weight:400; margin-top:1px;}
+  .org-eq-head .hor{display:block; font-size:10.5px; font-weight:400; opacity:.85;}
+  /* Organograma de impressão (uma página, paisagem) */
+  #orgPrint{display:none; width:272mm; -webkit-print-color-adjust:exact; print-color-adjust:exact;}
+  #orgPrint, #orgPrint *{-webkit-print-color-adjust:exact !important; print-color-adjust:exact !important;
+    overflow-wrap:anywhere;}
+  .p-tit{text-align:center; font-size:11px; font-weight:700; color:#0f3d7a; margin-bottom:4px;}
+  .p-topo{width:230px; margin:0 auto 6px; background:#0f3d7a; color:#fff; text-align:center;
+    border-radius:6px; padding:4px 6px; font-size:9px; font-weight:700; line-height:1.3;}
+  .p-topo span{font-weight:400; font-size:8px; opacity:.85;}
+  .p-unidades{display:flex; gap:3mm; align-items:flex-start; width:100%;}
+  .p-unidade{flex:1; min-width:0; border:0.5px solid #c9d6e6; border-radius:4px; padding:1.5mm;}
+  .p-unidade-h{background:#2e86c1; color:#fff; text-align:center; border-radius:3px;
+    padding:2px; font-size:7px; font-weight:700; margin-bottom:1.5mm;}
+  .p-unidade-h span{display:block; font-weight:400; font-size:5.5px; opacity:.9;}
+  .p-unidade .p-linha{gap:1.5mm;}
+  .p-linha{display:flex; gap:2mm; align-items:flex-start; width:100%;}
+  .p-eq{flex:1 1 0; width:0; min-width:0;}
+  .p-p .trf{font-size:4.8px; color:#7a8ba1; line-height:1.3; margin-top:0.5mm;
+    text-align:left; padding-left:2px;}
+  .p-p .trf div{position:relative; padding-left:5px;}
+  .p-p .trf div::before{content:"•"; position:absolute; left:0;}
+  .p-eq-h{color:#fff; border-radius:4px; padding:3px 2px; text-align:center; font-size:7px;
+    font-weight:700; line-height:1.15; word-break:break-word;}
+  .p-eq-h .hor{display:block; font-weight:400; font-size:5.5px;}
+  .p-p{background:#eaf2fb; border:0.5px solid #c9d6e6; border-radius:3px; padding:2px 1px;
+    text-align:center; margin-top:1.2mm; word-break:break-word;}
+  .p-p .nm{font-size:6.3px; font-weight:700; color:#0f3d7a; line-height:1.15;}
+  .p-p .fn{font-size:5.3px; color:#44607f; line-height:1.15;}
+  .p-vazio{background:#fbeee4; color:#a04000; font-size:5.5px; font-style:italic;
+    text-align:center; border-radius:3px; padding:3px 1px; margin-top:1.2mm;}
+  .p-sc{margin-top:3mm;}
+  .p-sc-h{background:#0f3d7a; color:#fff; text-align:center; border-radius:4px; padding:3px;
+    font-size:7.5px; font-weight:700;}
+  .p-sc-grid{columns:6; column-gap:2mm; margin-top:1.2mm;}
+  .p-sc-grid .p-p{break-inside:avoid; margin-top:0; margin-bottom:1.2mm;}
+  .p-rod{text-align:center; font-size:5.5px; color:#888; margin-top:2mm;}
+  @media print{
+    *{-webkit-print-color-adjust:exact !important; print-color-adjust:exact !important;}
+    header,.msg,.veu,#ecraLogin,main{display:none !important;}
+    #orgPrint{display:block !important;}
+    body{background:#fff;}
+  }
+</style>
+<style>
+  @page{ size: A4 landscape; margin: 8mm; }
+</style>
+</head>
+<body>
+
+<div id="ecraLogin">
+  <div class="login-caixa">
+    <h2>GestEquip · DDS</h2>
+    <div class="v">Gestão de Equipamentos · <span id="vLogin"></span></div>
+    <p class="login-erro" id="loginErro">Código incorreto.</p>
+    <input type="password" id="codigo" placeholder="Código de acesso" autocomplete="off">
+    <button id="btEntrar">Entrar</button>
+  </div>
+</div>
+
+<header>
+  <h1>GestEquip · DDS</h1>
+  <div class="sub">Divisão de Desenvolvimento Social · <span id="vHeader"></span></div>
+  <div class="tabs">
+    <button data-tab="tabQuadro" class="ativo">Quadro</button>
+    <button data-tab="tabFunc">Funcionários</button>
+    <button data-tab="tabOrg">Organograma</button>
+    <button data-tab="tabNec">Necessidades</button>
+    <button id="btRecarregar" style="margin-left:auto">↻</button>
+  </div>
+</header>
+
+<main>
+  <section id="tabQuadro"><div class="board" id="board"></div></section>
+
+  <section id="tabFunc" class="oculto">
+    <input class="pesquisa" id="pesquisa" placeholder="Pesquisar nome ou função…" autocomplete="off">
+    <button class="btn-largo" id="btNovoFunc">＋ Adicionar funcionário</button>
+    <div class="lista-f" id="listaFunc"></div>
+  </section>
+
+  <section id="tabOrg" class="oculto">
+    <div class="org-acao">
+      <button id="btAgrupar" data-modo="equipamento">Agrupar: Equipamento</button>
+      <button id="btImprimir">Imprimir / PDF</button>
+      <button id="btTarefasOrg">Mostrar tarefas: sim</button>
+    </div>
+    <div id="orgVista"></div>
+  </section>
+
+  <section id="tabNec" class="oculto"><div id="listaNec"></div></section>
+</main>
+
+<!-- Ficha de funcionário -->
+<div class="veu" id="veuFicha">
+  <div class="modal">
+    <div class="modal-head">
+      <h2 id="fichaTitulo">Ficha do funcionário</h2>
+      <div class="sub-nome" id="fichaSubNome"></div>
+    </div>
+    <div class="campo"><label>Nome</label><input id="fNome" autocomplete="off"></div>
+    <div class="duas">
+      <div class="campo"><label>Nº mecanográfico</label><input id="fMec" autocomplete="off"></div>
+      <div class="campo"><label>Unidade</label>
+        <select id="fUnidade"><option value=""></option><option>UASE</option><option>UDAJ</option></select>
+      </div>
+    </div>
+    <div class="duas">
+      <div class="campo"><label>Categoria</label><input id="fCategoria" autocomplete="off"></div>
+      <div class="campo"><label>Vínculo</label><input id="fVinculo" autocomplete="off"></div>
+    </div>
+    <div class="campo"><label>Função</label>
+      <input id="fFuncao" list="listaFuncoes" autocomplete="off" placeholder="ex.: Manutenção">
+      <datalist id="listaFuncoes"></datalist>
+    </div>
+    <div class="campo"><label>Área de atuação</label>
+      <input id="fArea" list="listaAreas" autocomplete="off" placeholder="ex.: Desporto">
+      <datalist id="listaAreas"></datalist>
+    </div>
+    <div class="campo"><label>Equipamento principal</label><select id="fEquip"></select></div>
+    <div class="campo" id="campoFuncao1"><label>Função no equip. principal</label>
+      <input id="fFuncao1" list="listaFuncoes" autocomplete="off" placeholder="ex.: Professor"></div>
+    <div class="campo"><label>Equipamento secundário</label><select id="fEquip2"></select></div>
+    <div class="campo" id="campoFuncao2"><label>Função no equip. secundário</label>
+      <input id="fFuncao2" list="listaFuncoes" autocomplete="off" placeholder="ex.: Bibliotecas"></div>
+
+    <div id="zonaTarefas">
+      <div class="tarefas-titulo" id="titTarefas1">O que faz — equipamento principal</div>
+      <div id="listaTarefas1"></div>
+      <div class="tarefa-nova">
+        <input id="novaTarefa1" placeholder="ex.: Tratamento da água" autocomplete="off">
+        <button id="btAddTarefa1" data-q="1">＋</button>
+      </div>
+      <div id="blocoTarefas2">
+        <div class="tarefas-titulo" id="titTarefas2">O que faz — equipamento secundário</div>
+        <div id="listaTarefas2"></div>
+        <div class="tarefa-nova">
+          <input id="novaTarefa2" placeholder="ex.: Atendimento na biblioteca" autocomplete="off">
+          <button id="btAddTarefa2" data-q="2">＋</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="botoes">
+      <button class="b-sec" id="fFechar">Fechar</button>
+      <button class="b-perigo" id="fRemover">Remover</button>
+      <button class="b-prim" id="fGuardar">Guardar</button>
+    </div>
+    <div class="confirmar" id="fConfirma">
+      <p>Remover este funcionário e as suas tarefas?</p>
+      <div class="botoes" style="margin-top:0">
+        <button class="b-sec" id="fConfNao">Não</button>
+        <button class="b-perigo" id="fConfSim">Sim, remover</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="orgPrint"></div>
+
+<!-- Ficha de equipamento -->
+<div class="veu" id="veuEquip">
+  <div class="modal">
+    <h2 id="equipTitulo">Equipamento</h2>
+    <div class="campo"><label>Nome</label><input id="eNome" autocomplete="off"></div>
+    <div class="campo"><label>Horário</label>
+      <input id="eHorario" autocomplete="off" placeholder="ex.: 2ª–6ª 9h–20h · Sáb 9h–13h"></div>
+    <div class="campo"><label>Localização</label><input id="eLocal" autocomplete="off"></div>
+    <div class="campo"><label>Cor</label>
+      <select id="eCor">
+        <option value="#0f3d7a">Azul escuro</option>
+        <option value="#2e86c1">Azul médio</option>
+        <option value="#1e8449">Verde</option>
+        <option value="#27ae60">Verde claro</option>
+        <option value="#c0561b">Laranja</option>
+      </select>
+    </div>
+    <div class="botoes">
+      <button class="b-sec" id="eFechar">Fechar</button>
+      <button class="b-prim" id="eGuardar">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="msg" id="msg"></div>
+
+<script>
+/* ================== CONFIGURAÇÃO ================== */
+var SUPABASE_URL = "https://cfzdlazrkufjsrxaneaw.supabase.co";
+var SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNmemRsYXpya3VmanNyeGFuZWF3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU0MDYxNzQsImV4cCI6MjEwMDk4MjE3NH0.W-v6nr-eFlzNLyrNFBjcnDsY4qhD3QskOjRnr9gh7bA";
+var CODIGO_ACESSO = "dds2026";
+var APP_VERSAO = "V1.9";
+/* ================================================== */
+
+var AREAS = ["Saúde","Educação","Biblioteca","AEC\u2019s","Equipamento","Ação Social","Associativismo","Juventude","Desporto","Cultura","Ambiente","Administrativo","Transportes"];
+var FUNCOES = ["Responsável","Professor","Manutenção","Receção","Manutenção/Receção",
+  "Nadador-Salvador","Limpeza","Motorista","Administrativa","Coordenador","Bibliotecas",
+  "Radar Social","Técnico Superior","Assistente Técnico","Assistente Operacional",
+  "Transporte de Refeições","Estágio","Apoio Técnico","Dirigente"];
+
+var est = { equipamentos: [], funcionarios: [], tarefas: [], necessidades: [] };
+var fichaId = null;          // id do funcionário aberto (null = novo)
+var orgComTarefas = true;
+var orgModo = "equipamento"; // ou "area"
+
+function el(id){ return document.getElementById(id); }
+function esc(t){ var d=document.createElement("div"); d.textContent=(t==null?"":t); return d.innerHTML; }
+function aviso(t){
+  var m = el("msg"); m.textContent = t; m.classList.add("ver");
+  clearTimeout(aviso._t); aviso._t = setTimeout(function(){ m.classList.remove("ver"); }, 2600);
+}
+
+async function api(caminho, opcoes){
+  opcoes = opcoes || {};
+  opcoes.headers = Object.assign({
+    "apikey": SUPABASE_KEY,
+    "Authorization": "Bearer " + SUPABASE_KEY,
+    "Content-Type": "application/json"
+  }, opcoes.headers || {});
+  var r = await fetch(SUPABASE_URL + "/rest/v1/" + caminho, opcoes);
+  if (!r.ok){
+    var t = await r.text();
+    throw new Error("Erro " + r.status + ": " + t.substring(0, 200));
+  }
+  if (opcoes.method === "DELETE" || (opcoes.headers["Prefer"] || "").indexOf("return=minimal") >= 0) return null;
+  var texto = await r.text();
+  return texto ? JSON.parse(texto) : null;
+}
+
+async function carregarTudo(){
+  var res = await Promise.all([
+    api("equipamentos?select=*&order=ordem"),
+    api("funcionarios?select=*&order=nome"),
+    api("tarefas?select=*&order=ordem,id"),
+    api("necessidades?select=*")
+  ]);
+  est.equipamentos = res[0]; est.funcionarios = res[1];
+  est.tarefas = res[2]; est.necessidades = res[3];
+}
+
+function equipDe(id){
+  for (var i = 0; i < est.equipamentos.length; i++)
+    if (est.equipamentos[i].id === id) return est.equipamentos[i];
+  return null;
+}
+function pessoasDe(eqId, incluirSecundario){
+  return est.funcionarios.filter(function(f){
+    return f.equipamento_id === eqId || (incluirSecundario && f.equipamento2_id === eqId);
+  });
+}
+function tarefasDe(fid){
+  return est.tarefas.filter(function(t){ return t.funcionario_id === fid; });
+}
+function tarefasDeEq(fid, eqId, ehPrincipal){
+  return est.tarefas.filter(function(t){
+    if (t.funcionario_id !== fid) return false;
+    if (t.equipamento_id == null) return ehPrincipal; // tarefas antigas contam no principal
+    return t.equipamento_id === eqId;
+  });
+}
+function cartoesDe(eqId){
+  var lista = [];
+  est.funcionarios.forEach(function(f){
+    if (f.equipamento_id === eqId)
+      lista.push({ p: f, fun: (f.funcao1 || f.funcao), sec: false });
+    else if (f.equipamento2_id === eqId)
+      lista.push({ p: f, fun: (f.funcao2 || f.funcao), sec: true });
+  });
+  return lista;
+}
+
+/* ---------------- Render: Quadro ---------------- */
+function renderQuadro(){
+  var b = el("board"); b.innerHTML = "";
+  est.equipamentos.forEach(function(eq){
+    var cartoes = cartoesDe(eq.id);
+    var corpo = "";
+    if (cartoes.length === 0){
+      corpo = '<div class="vazio-col">⚠ Sem funcionários atribuídos</div>';
+    } else {
+      cartoes.forEach(function(c){
+        var p = c.p;
+        var f = c.fun ? '<div class="fn">'+esc(c.fun)+(c.sec?' · 2º equip.':'')+'</div>'
+                      : '<div class="fn vazia">função por definir'+(c.sec?' · 2º equip.':'')+'</div>';
+        var nt = tarefasDeEq(p.id, eq.id, !c.sec).length;
+        var t = nt ? '<div class="tf">'+nt+' tarefa'+(nt>1?'s':'')+'</div>' : '';
+        corpo += '<div class="pessoa" data-id="'+p.id+'"><div class="nm">'+esc(p.nome)+'</div>'+f+t+'</div>';
+      });
+    }
+    var col = document.createElement("div");
+    col.className = "col";
+    var hor = eq.horario ? '<div class="hor">'+esc(eq.horario)+'</div>' : "";
+    col.innerHTML =
+      '<div class="col-head" data-eq="'+eq.id+'" style="background:'+esc(eq.cor)+';cursor:pointer">'+
+      '<div class="nome">'+esc(eq.nome)+hor+'</div>'+
+      '<div class="conta">'+cartoes.length+'</div></div>'+
+      '<div class="col-body">'+corpo+
+      '<button class="add-p" data-eq="'+eq.id+'">＋ Adicionar funcionário</button></div>';
+    b.appendChild(col);
+  });
+  var add = document.createElement("button");
+  add.className = "add-col";
+  add.id = "btNovoEquip";
+  add.textContent = "＋ Novo equipamento";
+  b.appendChild(add);
+}
+
+/* ---------------- Render: Funcionários ---------------- */
+function renderLista(){
+  var termo = el("pesquisa").value.trim().toLowerCase();
+  var lf = el("listaFunc"); lf.innerHTML = "";
+  est.funcionarios.forEach(function(p){
+    var alvo = (p.nome + " " + (p.funcao || "")).toLowerCase();
+    if (termo && alvo.indexOf(termo) < 0) return;
+    var eq = equipDe(p.equipamento_id);
+    var f = p.funcao ? '<div class="fn">'+esc(p.funcao)+(eq ? " · " + esc(eq.nome) : "")+'</div>'
+                     : '<div class="fn vazia">função por definir'+(eq ? " · " + esc(eq.nome) : "")+'</div>';
+    var nt = tarefasDe(p.id).length;
+    var t = nt ? '<div class="tf">'+nt+' tarefa'+(nt>1?'s':'')+'</div>' : '';
+    var d = document.createElement("div");
+    d.className = "pessoa"; d.dataset.id = p.id;
+    d.innerHTML = '<div class="nm">'+esc(p.nome)+'</div>'+f+t;
+    lf.appendChild(d);
+  });
+}
+
+/* ---------------- Render: Organograma ---------------- */
+function tarefasCartaoHTML(c, eqId){
+  if (!orgComTarefas) return "";
+  var ts = tarefasDeEq(c.p.id, eqId, !c.sec).map(function(x){
+    return '<div>'+esc(x.descricao)+'</div>'; });
+  return ts.length ? '<div class="trf">'+ts.join("")+'</div>' : "";
+}
+function cartaoOrgHTML(c, eqId, mostrarEquip){
+  var f = c.fun ? '<div class="fn">'+esc(c.fun)+'</div>'
+                : '<div class="fn vazia">função por definir</div>';
+  var extra = mostrarEquip && eqId ? '<div class="fn" style="font-style:italic">'+esc((equipDe(eqId)||{}).nome||"")+'</div>' : "";
+  return '<div class="org-p"><div class="nm">'+esc(c.p.nome)+'</div>'+f+extra+tarefasCartaoHTML(c, eqId)+'</div>';
+}
+// Cartões agrupados por área: percorre cada afetação (principal e secundária)
+function cartoesPorArea(){
+  var grupos = {};
+  est.funcionarios.forEach(function(f){
+    var area = f.area || "(sem área definida)";
+    if (!grupos[area]) grupos[area] = [];
+    if (f.equipamento_id)
+      grupos[area].push({ p: f, fun: (f.funcao1 || f.funcao), sec: false, eqId: f.equipamento_id });
+    else if (!f.equipamento2_id)
+      grupos[area].push({ p: f, fun: f.funcao, sec: false, eqId: null });
+    if (f.equipamento2_id)
+      grupos[area].push({ p: f, fun: (f.funcao2 || f.funcao), sec: true, eqId: f.equipamento2_id });
+  });
+  return grupos;
+}
+// Unidade dominante de um conjunto de cartões (a que tiver mais funcionários)
+function unidadeDominante(cartoes){
+  var cont = {};
+  cartoes.forEach(function(c){
+    var u = c.p.unidade || "—";
+    cont[u] = (cont[u] || 0) + 1;
+  });
+  var melhor = "—", max = -1;
+  Object.keys(cont).forEach(function(u){
+    if (u !== "—" && cont[u] > max){ max = cont[u]; melhor = u; }
+  });
+  return melhor;
+}
+var CHEFES = { "UASE": "Nuno A. M. Martins · UASE", "UDAJ": "João M. Magalhães · UDAJ", "—": "Outros" };
+
+function blocoEqHTML(eq){
+  var cartoes = cartoesDe(eq.id);
+  var largo = cartoes.length > 8;
+  var hor = eq.horario ? '<span class="hor">'+esc(eq.horario)+'</span>' : "";
+  var h = '<div class="org-eq'+(largo?' largo':'')+'">'+
+          '<div class="org-eq-head" style="background:'+esc(eq.cor)+'">'+esc(eq.nome)+
+          ' <span class="n">('+cartoes.length+')</span>'+hor+'</div>';
+  if (cartoes.length === 0){
+    h += '<div class="lig"></div><div class="org-vazio">⚠ Sem funcionários atribuídos</div>';
+  } else if (largo){
+    h += '<div class="lig"></div><div class="org-cols">';
+    cartoes.forEach(function(c){ h += cartaoOrgHTML(c, eq.id, false); });
+    h += '</div>';
+  } else {
+    cartoes.forEach(function(c){ h += '<div class="lig"></div>' + cartaoOrgHTML(c, eq.id, false); });
+  }
+  return h + '</div>';
+}
+function blocoAreaHTML(area, cartoes){
+  var largo = cartoes.length > 8;
+  var h = '<div class="org-eq'+(largo?' largo':'')+'">'+
+          '<div class="org-eq-head" style="background:#0f3d7a">'+esc(area)+
+          ' <span class="n">('+cartoes.length+')</span></div>';
+  if (largo){
+    h += '<div class="lig"></div><div class="org-cols">';
+    cartoes.forEach(function(c){ h += cartaoOrgHTML(c, c.eqId, true); });
+    h += '</div>';
+  } else {
+    cartoes.forEach(function(c){ h += '<div class="lig"></div>' + cartaoOrgHTML(c, c.eqId, true); });
+  }
+  return h + '</div>';
+}
+function renderOrg(){
+  var v = el("orgVista");
+  var html = '<div class="org-topo"><div class="t1">Divisão de Desenvolvimento Social</div>'+
+             '<div class="t2">Vítor Antunes · Chefe de Divisão</div></div><div class="lig"></div>';
+
+  if (orgModo === "area"){
+    // Divisão → UASE / UDAJ → áreas lado a lado
+    var porUnidade = { "UASE": [], "UDAJ": [], "—": [] };
+    cortesOrdenados(cartoesPorArea()).forEach(function(par){
+      porUnidade[unidadeDominante(par[1])].push(blocoAreaHTML(par[0], par[1]));
+    });
+    html += '<div class="org-unidades">';
+    ["UASE", "UDAJ"].forEach(function(u){
+      var blocos = porUnidade[u];
+      if (u === "UASE") blocos = blocos.concat(porUnidade["—"]);
+      var chefe = u === "UASE" ? "Nuno A. M. Martins" : "João M. Magalhães";
+      html += '<div class="org-unidade">'+
+              '<div class="org-unidade-head">'+esc(u)+
+              '<span class="u2">'+esc(chefe)+' · Chefe de Unidade</span></div>'+
+              '<div class="org-grid">'+ blocos.join("") +'</div></div>';
+    });
+    html += '</div>';
+  } else {
+    // Divisão → equipamentos diretamente (sem unidades)
+    html += '<div class="org-grid">';
+    est.equipamentos.forEach(function(eq){ html += blocoEqHTML(eq); });
+    html += '</div>';
+  }
+
+  html += '<div class="org-rodape">GestEquip · DDS · Município de Cabeceiras de Basto · '+
+          APP_VERSAO+' · vista por '+(orgModo==="area"?"área":"equipamento")+'</div>';
+  v.innerHTML = html;
+}
+// Ordena grupos: com nome primeiro (alfabético), "(sem …)" no fim
+function cortesOrdenados(grupos){
+  var chaves = Object.keys(grupos).sort(function(a, b){
+    var sa = a.indexOf("(sem") === 0, sb = b.indexOf("(sem") === 0;
+    if (sa !== sb) return sa ? 1 : -1;
+    return a.localeCompare(b, "pt");
+  });
+  return chaves.map(function(k){ return [k, grupos[k]]; });
+}
+
+/* ---------------- Render: Necessidades ---------------- */
+function necDe(eqId){
+  for (var i = 0; i < est.necessidades.length; i++)
+    if (est.necessidades[i].equipamento_id === eqId) return est.necessidades[i];
+  return null;
+}
+function renderNec(){
+  var z = el("listaNec"); z.innerHTML = "";
+  est.equipamentos.forEach(function(eq){
+    var n = necDe(eq.id) || {};
+    var alocados = pessoasDe(eq.id, true).length;
+    var nec = (n.funcionarios_necessarios == null ? "" : n.funcionarios_necessarios);
+    var def = "";
+    if (nec !== ""){
+      var d = alocados - nec;
+      def = '<span class="defice '+(d < 0 ? "neg" : "pos")+'">'+(d > 0 ? "+" + d : d)+'</span>';
+    }
+    var card = document.createElement("div");
+    card.className = "nec-card"; card.dataset.eq = eq.id;
+    card.innerHTML =
+      '<h3>'+esc(eq.nome)+' — '+alocados+' afetado'+(alocados===1?'':'s')+' '+def+'</h3>'+
+      '<div class="nec-linha">'+
+        '<div class="campo"><label>Necessários</label>'+
+          '<input type="number" min="0" inputmode="numeric" class="n-nec" value="'+esc(nec)+'"></div>'+
+        '<div class="campo"><label>Prioridade</label>'+
+          '<select class="n-pri"><option value=""></option>'+
+          ["Alta","Média","Baixa"].map(function(p){
+            return '<option'+(n.prioridade===p?' selected':'')+'>'+p+'</option>';
+          }).join("")+'</select></div>'+
+      '</div>'+
+      '<div class="campo"><label>Funções em falta</label>'+
+        '<input class="n-fal" value="'+esc(n.funcoes_em_falta || "")+'" placeholder="ex.: 1 nadador-salvador, 1 rececionista"></div>'+
+      '<div class="campo"><label>Observações / dificuldades</label>'+
+        '<textarea class="n-obs">'+esc(n.observacoes || "")+'</textarea></div>'+
+      '<div class="botoes" style="margin-top:6px">'+
+        '<button class="b-prim n-guardar">Guardar</button></div>';
+    z.appendChild(card);
+  });
+}
+
+async function guardarNec(card){
+  var eqId = parseInt(card.dataset.eq, 10);
+  var corpo = {
+    equipamento_id: eqId,
+    funcionarios_necessarios: card.querySelector(".n-nec").value === "" ? null
+      : parseInt(card.querySelector(".n-nec").value, 10),
+    prioridade: card.querySelector(".n-pri").value || null,
+    funcoes_em_falta: card.querySelector(".n-fal").value.trim() || null,
+    observacoes: card.querySelector(".n-obs").value.trim() || null
+  };
+  var existente = necDe(eqId);
+  if (existente){
+    await api("necessidades?id=eq." + existente.id, {
+      method: "PATCH", headers: { "Prefer": "return=minimal" }, body: JSON.stringify(corpo) });
+  } else {
+    await api("necessidades", {
+      method: "POST", headers: { "Prefer": "return=minimal" }, body: JSON.stringify(corpo) });
+  }
+  est.necessidades = await api("necessidades?select=*");
+  renderNec(); aviso("Necessidades guardadas");
+}
+
+/* ---------------- Ficha ---------------- */
+function preencherSelectsEquip(sel, valor, permitirVazio){
+  sel.innerHTML = permitirVazio ? '<option value="">— nenhum —</option>' : "";
+  est.equipamentos.forEach(function(eq){
+    var o = document.createElement("option");
+    o.value = eq.id; o.textContent = eq.nome;
+    if (valor === eq.id) o.selected = true;
+    sel.appendChild(o);
+  });
+}
+
+function abrirFicha(id, eqPre){
+  fichaId = id;
+  var p = id ? est.funcionarios.find(function(x){ return x.id === id; }) : null;
+  el("fichaTitulo").textContent = p ? "Ficha do funcionário" : "Novo funcionário";
+  el("fNome").value = p ? p.nome : "";
+  el("fMec").value = p ? (p.num_mec || "") : "";
+  el("fUnidade").value = p ? (p.unidade || "") : "";
+  el("fCategoria").value = p ? (p.categoria || "") : "";
+  el("fVinculo").value = p ? (p.vinculo || "") : "";
+  el("fFuncao").value = p ? (p.funcao || "") : "";
+  el("fFuncao1").value = p ? (p.funcao1 || "") : "";
+  el("fFuncao2").value = p ? (p.funcao2 || "") : "";
+  el("fArea").value = p ? (p.area || "") : "";
+  preencherSelectsEquip(el("fEquip"), p ? p.equipamento_id : (eqPre || null), true);
+  preencherSelectsEquip(el("fEquip2"), p ? p.equipamento2_id : null, true);
+  atualizarBlocosTarefas();
+  el("fRemover").style.display = p ? "" : "none";
+  el("zonaTarefas").style.display = p ? "" : "none";
+  el("fConfirma").classList.remove("aberto");
+  if (p) renderTarefasFicha();
+  el("veuFicha").classList.add("aberto");
+}
+
+function nomeEquipSel(sel){
+  var v = el(sel).value;
+  if (!v) return null;
+  var eq = equipDe(parseInt(v, 10));
+  return eq ? eq.nome : null;
+}
+function atualizarBlocosTarefas(){
+  var n1 = nomeEquipSel("fEquip"), n2 = nomeEquipSel("fEquip2");
+  el("titTarefas1").textContent = "O que faz — " + (n1 || "equipamento principal");
+  el("titTarefas2").textContent = "O que faz — " + (n2 || "equipamento secundário");
+  el("blocoTarefas2").style.display = n2 ? "" : "none";
+  el("campoFuncao2").style.display = n2 ? "" : "none";
+}
+function renderTarefasFicha(){
+  var eq1 = el("fEquip").value ? parseInt(el("fEquip").value, 10) : null;
+  var eq2 = el("fEquip2").value ? parseInt(el("fEquip2").value, 10) : null;
+  var z1 = el("listaTarefas1"); z1.innerHTML = "";
+  tarefasDeEq(fichaId, eq1, true).forEach(function(t){
+    var d = document.createElement("div");
+    d.className = "tarefa";
+    d.innerHTML = '<span>'+esc(t.descricao)+'</span><button data-t="'+t.id+'">✕</button>';
+    z1.appendChild(d);
+  });
+  if (!z1.innerHTML) z1.innerHTML = '<div style="font-size:12.5px;color:#8a97a8;margin-bottom:6px">Sem tarefas registadas neste equipamento.</div>';
+  var z2 = el("listaTarefas2"); z2.innerHTML = "";
+  if (eq2 != null){
+    tarefasDeEq(fichaId, eq2, false).forEach(function(t){
+      var d = document.createElement("div");
+      d.className = "tarefa";
+      d.innerHTML = '<span>'+esc(t.descricao)+'</span><button data-t="'+t.id+'">✕</button>';
+      z2.appendChild(d);
+    });
+    if (!z2.innerHTML) z2.innerHTML = '<div style="font-size:12.5px;color:#8a97a8;margin-bottom:6px">Sem tarefas registadas neste equipamento.</div>';
+  }
+}
+
+async function guardarFicha(){
+  var nome = el("fNome").value.trim();
+  if (!nome){ el("fNome").focus(); return; }
+  var corpo = {
+    nome: nome,
+    num_mec: el("fMec").value.trim() || null,
+    unidade: el("fUnidade").value || null,
+    categoria: el("fCategoria").value.trim() || null,
+    vinculo: el("fVinculo").value.trim() || null,
+    funcao: el("fFuncao").value.trim() || null,
+    area: el("fArea").value.trim() || null,
+    funcao1: el("fFuncao1").value.trim() || null,
+    funcao2: el("fFuncao2").value.trim() || null,
+    equipamento_id: el("fEquip").value ? parseInt(el("fEquip").value, 10) : null,
+    equipamento2_id: el("fEquip2").value ? parseInt(el("fEquip2").value, 10) : null
+  };
+  if (fichaId){
+    await api("funcionarios?id=eq." + fichaId, {
+      method: "PATCH", headers: { "Prefer": "return=minimal" }, body: JSON.stringify(corpo) });
+    aviso("Ficha guardada");
+  } else {
+    var novo = await api("funcionarios", {
+      method: "POST", headers: { "Prefer": "return=representation" }, body: JSON.stringify(corpo) });
+    fichaId = novo[0].id;
+    aviso("Funcionário criado — pode agora registar as tarefas");
+  }
+  est.funcionarios = await api("funcionarios?select=*&order=nome");
+  el("zonaTarefas").style.display = "";
+  el("fRemover").style.display = "";
+  renderTarefasFicha(); renderTudo();
+}
+
+async function removerFicha(){
+  await api("funcionarios?id=eq." + fichaId, {
+    method: "DELETE", headers: { "Prefer": "return=minimal" } });
+  est.funcionarios = await api("funcionarios?select=*&order=nome");
+  est.tarefas = await api("tarefas?select=*&order=ordem,id");
+  el("veuFicha").classList.remove("aberto");
+  renderTudo(); aviso("Funcionário removido");
+}
+
+async function adicionarTarefa(qual){
+  var campo = el("novaTarefa" + qual);
+  var txt = campo.value.trim();
+  if (!txt || !fichaId) return;
+  var sel = el(qual === "1" ? "fEquip" : "fEquip2").value;
+  var eqId = sel ? parseInt(sel, 10) : null;
+  if (qual === "2" && eqId == null) return;
+  await api("tarefas", { method: "POST", headers: { "Prefer": "return=minimal" },
+    body: JSON.stringify({ funcionario_id: fichaId, descricao: txt, equipamento_id: eqId }) });
+  campo.value = "";
+  est.tarefas = await api("tarefas?select=*&order=ordem,id");
+  renderTarefasFicha(); renderTudo();
+}
+
+async function removerTarefa(tid){
+  await api("tarefas?id=eq." + tid, {
+    method: "DELETE", headers: { "Prefer": "return=minimal" } });
+  est.tarefas = await api("tarefas?select=*&order=ordem,id");
+  renderTarefasFicha(); renderTudo();
+}
+
+/* ---------------- Organograma de impressão (1 página paisagem) ---------------- */
+function renderOrgPrint(){
+  var z = el("orgPrint");
+  function cartaoPrint(c, eqId, mostrarEquip){
+    var t = "";
+    var ts = tarefasDeEq(c.p.id, eqId, !c.sec).map(function(x){
+      return '<div>'+esc(x.descricao)+'</div>'; });
+    if (ts.length) t = '<div class="trf">'+ts.join("")+'</div>';
+    var extra = mostrarEquip && eqId ? '<div class="fn" style="font-style:italic">'+esc((equipDe(eqId)||{}).nome||"")+'</div>' : "";
+    return '<div class="p-p"><div class="nm">'+esc(c.p.nome)+'</div>'+
+           '<div class="fn">'+esc(c.fun || "função por definir")+'</div>'+extra+t+'</div>';
+  }
+  var titulo = orgModo === "area"
+    ? "Organograma DDS — por Área de Atuação · Município de Cabeceiras de Basto"
+    : "Organograma DDS — Gestão de Equipamentos · Município de Cabeceiras de Basto";
+  var html = '<div class="p-tit">'+titulo+'</div>';
+  html += '<div class="p-topo">Divisão de Desenvolvimento Social<br><span>Vítor Antunes · Chefe de Divisão</span></div>';
+
+  // Montar blocos por unidade
+  function blocoEqPrint(eq){
+    var cartoes = cartoesDe(eq.id);
+    var h = '<div class="p-eq"><div class="p-eq-h" style="background:'+esc(eq.cor)+'">'+
+            esc(eq.nome)+' ('+cartoes.length+')';
+    if (eq.horario) h += '<span class="hor">'+esc(eq.horario)+'</span>';
+    h += '</div>';
+    if (!cartoes.length) h += '<div class="p-vazio">⚠ Sem funcionários</div>';
+    cartoes.forEach(function(c){ h += cartaoPrint(c, eq.id, false); });
+    return h + '</div>';
+  }
+  function blocoAreaPrint(area, cartoes){
+    var h = '<div class="p-eq"><div class="p-eq-h" style="background:#0f3d7a">'+
+            esc(area)+' ('+cartoes.length+')</div>';
+    cartoes.forEach(function(c){ h += cartaoPrint(c, c.eqId, true); });
+    return h + '</div>';
+  }
+
+  var porUnidade = { "UASE": [], "UDAJ": [], "—": [] };
+  if (orgModo === "area"){
+    cortesOrdenados(cartoesPorArea()).forEach(function(par){
+      porUnidade[unidadeDominante(par[1])].push(blocoAreaPrint(par[0], par[1]));
+    });
+    html += '<div class="p-unidades">';
+    ["UASE", "UDAJ"].forEach(function(u){
+      var blocos = porUnidade[u];
+      if (u === "UASE") blocos = blocos.concat(porUnidade["—"]);
+      var chefe = u === "UASE" ? "Nuno A. M. Martins" : "João M. Magalhães";
+      html += '<div class="p-unidade"><div class="p-unidade-h">'+esc(u)+
+              '<span>'+esc(chefe)+' · Chefe de Unidade</span></div>'+
+              '<div class="p-linha">'+ blocos.join("") +'</div></div>';
+    });
+    html += '</div>';
+  } else {
+    // Sem unidades: equipamentos numa linha + Serviços Centrais em faixa
+    var sc = null, resto = [];
+    est.equipamentos.forEach(function(eq){
+      if (eq.nome.indexOf("Serviços Centrais") === 0) sc = eq; else resto.push(eq);
+    });
+    html += '<div class="p-linha">';
+    resto.forEach(function(eq){ html += blocoEqPrint(eq); });
+    html += '</div>';
+    if (sc){
+      var csc = cartoesDe(sc.id);
+      html += '<div class="p-sc"><div class="p-sc-h">'+esc(sc.nome)+' ('+csc.length+')'+
+              (sc.horario ? ' · '+esc(sc.horario) : '')+'</div><div class="p-sc-grid">';
+      csc.forEach(function(c){ html += cartaoPrint(c, sc.id, false); });
+      html += '</div></div>';
+    }
+  }
+
+  html += '<div class="p-rod">GestEquip · DDS · '+APP_VERSAO+
+          ' · vista por '+(orgModo==="area"?"área":"equipamento")+
+          ' · impresso em '+new Date().toLocaleDateString("pt-PT")+'</div>';
+  z.innerHTML = html;
+}
+
+/* ---------------- Equipamento ---------------- */
+var equipEditId = null;
+function abrirEquip(id){
+  equipEditId = id;
+  var eq = id ? equipDe(id) : null;
+  el("equipTitulo").textContent = eq ? eq.nome : "Novo equipamento";
+  el("eNome").value = eq ? eq.nome : "";
+  el("eHorario").value = eq ? (eq.horario || "") : "";
+  el("eLocal").value = eq ? (eq.localizacao || "") : "";
+  el("eCor").value = eq ? (eq.cor || "#0f3d7a") : "#0f3d7a";
+  el("veuEquip").classList.add("aberto");
+}
+async function guardarEquip(){
+  var nome = el("eNome").value.trim();
+  if (!nome){ el("eNome").focus(); return; }
+  var corpo = {
+    nome: nome,
+    horario: el("eHorario").value.trim() || null,
+    localizacao: el("eLocal").value.trim() || null,
+    cor: el("eCor").value
+  };
+  if (equipEditId){
+    await api("equipamentos?id=eq." + equipEditId, {
+      method: "PATCH", headers: { "Prefer": "return=minimal" },
+      body: JSON.stringify(corpo) });
+  } else {
+    var maxOrdem = 0;
+    est.equipamentos.forEach(function(e){ if (e.ordem > maxOrdem) maxOrdem = e.ordem; });
+    corpo.ordem = maxOrdem + 1;
+    await api("equipamentos", {
+      method: "POST", headers: { "Prefer": "return=minimal" },
+      body: JSON.stringify(corpo) });
+  }
+  est.equipamentos = await api("equipamentos?select=*&order=ordem");
+  el("veuEquip").classList.remove("aberto");
+  renderTudo(); aviso("Equipamento guardado");
+}
+
+/* ---------------- Geral ---------------- */
+function renderTudo(){
+  renderQuadro(); renderLista(); renderOrg(); renderNec();
+}
+
+function mostrarTab(id){
+  ["tabQuadro","tabFunc","tabOrg","tabNec"].forEach(function(t){
+    el(t).classList.toggle("oculto", t !== id);
+  });
+  document.querySelectorAll(".tabs button").forEach(function(b){
+    b.classList.toggle("ativo", b.dataset.tab === id);
+  });
+  if (id === "tabQuadro") renderQuadro();
+  else if (id === "tabFunc") renderLista();
+  else if (id === "tabOrg") renderOrg();
+  else if (id === "tabNec") renderNec();
+}
+
+document.addEventListener("DOMContentLoaded", function(){
+  el("vLogin").textContent = APP_VERSAO;
+  el("vHeader").textContent = APP_VERSAO;
+  var dl = el("listaFuncoes");
+  FUNCOES.forEach(function(f){
+    var o = document.createElement("option"); o.value = f; dl.appendChild(o);
+  });
+  var dla = el("listaAreas");
+  AREAS.forEach(function(a){
+    var o = document.createElement("option"); o.value = a; dla.appendChild(o);
+  });
+
+  el("btEntrar").addEventListener("click", async function(){
+    if (el("codigo").value !== CODIGO_ACESSO){
+      el("loginErro").style.display = "block"; return;
+    }
+    el("btEntrar").textContent = "A carregar…";
+    try {
+      await carregarTudo();
+      renderTudo();
+      el("ecraLogin").style.display = "none";
+    } catch(e){
+      el("btEntrar").textContent = "Entrar";
+      aviso("Erro a ligar ao Supabase — verifique URL e chave. " + e.message);
+    }
+  });
+  el("codigo").addEventListener("keydown", function(ev){
+    if (ev.key === "Enter") el("btEntrar").click();
+  });
+
+  document.querySelector(".tabs").addEventListener("click", function(ev){
+    if (ev.target.closest("#btRecarregar")){
+      el("btRecarregar").textContent = "…";
+      carregarTudo().then(function(){
+        renderTudo(); el("btRecarregar").textContent = "↻"; aviso("Dados atualizados");
+      }).catch(function(e){
+        el("btRecarregar").textContent = "↻"; aviso(e.message);
+      });
+      return;
+    }
+    var b = ev.target.closest("button");
+    if (b && b.dataset.tab) mostrarTab(b.dataset.tab);
+  });
+
+  el("board").addEventListener("click", function(ev){
+    var p = ev.target.closest(".pessoa");
+    if (p){ abrirFicha(parseInt(p.dataset.id, 10)); return; }
+    var a = ev.target.closest(".add-p");
+    if (a){ abrirFicha(null, parseInt(a.dataset.eq, 10)); return; }
+    var h = ev.target.closest(".col-head");
+    if (h){ abrirEquip(parseInt(h.dataset.eq, 10)); return; }
+    if (ev.target.closest("#btNovoEquip")) abrirEquip(null);
+  });
+  el("eFechar").addEventListener("click", function(){ el("veuEquip").classList.remove("aberto"); });
+  el("eGuardar").addEventListener("click", function(){
+    guardarEquip().catch(function(e){ aviso(e.message); });
+  });
+  el("listaFunc").addEventListener("click", function(ev){
+    var p = ev.target.closest(".pessoa");
+    if (p) abrirFicha(parseInt(p.dataset.id, 10));
+  });
+  el("pesquisa").addEventListener("input", renderLista);
+  el("btNovoFunc").addEventListener("click", function(){ abrirFicha(null); });
+
+  el("fFechar").addEventListener("click", function(){ el("veuFicha").classList.remove("aberto"); });
+  el("fGuardar").addEventListener("click", function(){
+    guardarFicha().catch(function(e){ aviso(e.message); });
+  });
+  el("fRemover").addEventListener("click", function(){ el("fConfirma").classList.add("aberto"); });
+  el("fConfNao").addEventListener("click", function(){ el("fConfirma").classList.remove("aberto"); });
+  el("fConfSim").addEventListener("click", function(){
+    removerFicha().catch(function(e){ aviso(e.message); });
+  });
+  el("btAddTarefa1").addEventListener("click", function(){
+    adicionarTarefa("1").catch(function(e){ aviso(e.message); });
+  });
+  el("btAddTarefa2").addEventListener("click", function(){
+    adicionarTarefa("2").catch(function(e){ aviso(e.message); });
+  });
+  el("novaTarefa1").addEventListener("keydown", function(ev){
+    if (ev.key === "Enter") el("btAddTarefa1").click();
+  });
+  el("novaTarefa2").addEventListener("keydown", function(ev){
+    if (ev.key === "Enter") el("btAddTarefa2").click();
+  });
+  el("zonaTarefas").addEventListener("click", function(ev){
+    var b = ev.target.closest("button[data-t]");
+    if (b) removerTarefa(parseInt(b.dataset.t, 10)).catch(function(e){ aviso(e.message); });
+  });
+  el("fEquip").addEventListener("change", function(){
+    atualizarBlocosTarefas(); if (fichaId) renderTarefasFicha();
+  });
+  el("fEquip2").addEventListener("change", function(){
+    atualizarBlocosTarefas(); if (fichaId) renderTarefasFicha();
+  });
+
+  el("btAgrupar").addEventListener("click", function(){
+    orgModo = orgModo === "equipamento" ? "area" : "equipamento";
+    el("btAgrupar").textContent = "Agrupar: " + (orgModo === "area" ? "Área" : "Equipamento");
+    renderOrg();
+  });
+  el("btImprimir").addEventListener("click", function(){ renderOrgPrint(); window.print(); });
+  el("btTarefasOrg").addEventListener("click", function(){
+    orgComTarefas = !orgComTarefas;
+    el("btTarefasOrg").textContent = "Mostrar tarefas: " + (orgComTarefas ? "sim" : "não");
+    renderOrg();
+  });
+
+  el("listaNec").addEventListener("click", function(ev){
+    var b = ev.target.closest(".n-guardar");
+    if (b) guardarNec(b.closest(".nec-card")).catch(function(e){ aviso(e.message); });
+  });
+});
+</script>
+</body>
+</html>
